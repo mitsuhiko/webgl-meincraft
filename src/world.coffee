@@ -1,7 +1,7 @@
 ChunkArray = Uint8Array || Array
 
 CUBE_SIZE = 1.0
-CHUNK_SIZE = 16
+CHUNK_SIZE = 8
 TEXTURES_PER_ROW = 16
 BLOCK_TYPES =
   air:          0
