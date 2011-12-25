@@ -13,9 +13,23 @@ BLOCK_TYPES =
 makeNewChunk = ->
   new ChunkArray CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
 
+makeBlockAABB = (x, y, z, size) ->
+  v1 = [CUBE_SIZE * x - CUBE_SIZE / 2,
+        CUBE_SIZE * y - CUBE_SIZE / 2,
+        CUBE_SIZE * z - CUBE_SIZE / 2]
+  v2 = [CUBE_SIZE * size, CUBE_SIZE * size, CUBE_SIZE * size]
+  [vec3.create(v1), vec3.add(v1, v2, vec3.create())]
 
-div = (x, y) -> Math.floor x / y
-mod = (x, y) -> (x % y + y) % y
+
+parseKey = (key) ->
+  [x, y, z] = key.split('|')
+  [+x, +y, +z]
+
+div = (x, y) ->
+  Math.floor x / y
+
+mod = (x, y) ->
+  (x % y + y) % y
 
 
 class World
@@ -138,17 +152,30 @@ class World
         @cachedVBOs[key] = vbo
     vbo
 
-  getChunkVBOByKey: (key) ->
-    [x, y, z] = key.split('|')
-    this.getChunkVBO(+x, +y, +z)
+  iterVisibleVBOs: (callback) ->
+    frustum = webglmc.engine.getCurrentFrustum()
+    cameraPos = webglmc.engine.getCameraPos()
+    rv = []
+
+    for key, chunk of @chunks
+      [x, y, z] = parseKey key
+      vbo = this.getChunkVBO x, y, z
+      if !vbo
+        continue
+      [vec1, vec2] = makeBlockAABB x, y, z, CHUNK_SIZE
+      if frustum.testAABB(vec1, vec2) >= 0
+        distance = vec3.subtract vec1, cameraPos
+        rv.push vbo: vbo, distance: vec3.length(distance)
+
+    rv.sort (a, b) -> a.distance - b.distance
+    for info in rv
+      callback info.vbo
 
   draw: ->
     @shader.use()
     @atlas.bind()
-    for key, chunk of @chunks
-      vbo = this.getChunkVBOByKey(key)
-      if vbo
-        vbo.draw()
+    this.iterVisibleVBOs (vbo) ->
+      vbo.draw()
 
 
 public = window.webglmc ?= {}

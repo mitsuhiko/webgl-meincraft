@@ -29,6 +29,15 @@ class Engine
     console.debug 'Render canvas =', @canvas
     console.debug 'WebGL context =', @gl
 
+  getCameraPos : ->
+    mvp = @modelView.top
+    vec3.create mvp[12], mvp[13], mvp[14]
+
+  getCurrentFrustum : ->
+    new webglmc.Frustum mat4.multiply(webglmc.engine.projection.top,
+                                      webglmc.engine.modelView.top,
+                                      mat4.create())
+
   flushUniforms: (force = false) ->
     if !(@matrixState.dirty || force)
       return
