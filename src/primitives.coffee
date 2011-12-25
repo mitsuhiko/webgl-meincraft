@@ -117,7 +117,6 @@ class CubeMaker
     vbo.addBuffer 'aVertexPosition', 3, @positions
     vbo.addBuffer 'aTextureCoord', 2, @texcoords
     vbo.addIndexBuffer @indexes
-    console.log this
     if upload
       vbo.upload()
     vbo

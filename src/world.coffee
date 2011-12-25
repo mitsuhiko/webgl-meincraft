@@ -14,7 +14,7 @@ makeNewChunk = ->
   new ChunkArray CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
 
 
-div = (x, y) -> parseInt x / y
+div = (x, y) -> Math.floor x / y
 mod = (x, y) -> (x % y + y) % y
 
 
@@ -61,8 +61,8 @@ class World
     inX = mod x, CHUNK_SIZE
     inY = mod y, CHUNK_SIZE
     inZ = mod z, CHUNK_SIZE
-    oldType = chunk[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE]
-    chunk[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_SIZE] = type
+    oldType = chunk[inX + inY * CHUNK_SIZE + inZ * CHUNK_SIZE * CHUNK_SIZE]
+    chunk[inX + inY * CHUNK_SIZE + inZ * CHUNK_SIZE * CHUNK_SIZE] = type
 
     this.markVBODirty cx, cy, cz
 
@@ -101,7 +101,8 @@ class World
       
     addSide = (side, type) =>
       texture = this.getBlockTexture type
-      maker.addSide side, cx * CUBE_SIZE, cy * CUBE_SIZE, cz * CUBE_SIZE, texture
+      maker.addSide side, offX + cx * CUBE_SIZE, offY + cy * CUBE_SIZE,
+        offZ + cz * CUBE_SIZE, texture
 
     for cz in [0...CHUNK_SIZE]
       for cy in [0...CHUNK_SIZE]

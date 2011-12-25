@@ -1,6 +1,6 @@
 RESOURCES = [
   ['simpleShader', 'assets/simple.glsl'],
-  ['terrain', 'assets/terrain.png.texture']
+  ['terrain', 'assets/terrain.png.texture', filtering: 'NEAREST', clampToEdge: true]
 ]
 
 

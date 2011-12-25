@@ -14,7 +14,9 @@ class Game
     # Initialize the test world
     blockTypes = webglmc.BLOCK_TYPES
     @world = new webglmc.World
-    @world.setBlock 0, 0, 0, blockTypes.grass
+    @world.setBlock 0, 0, -2, blockTypes.grass
+    @world.setBlock 0, 0, -1, blockTypes.grass
+    @world.setBlock 0, 0, 0, blockTypes.stone
     @world.setBlock 0, 0, 1, blockTypes.grass
     @world.setBlock 0, 0, 2, blockTypes.grass
 
