@@ -7,6 +7,7 @@ CUBE_VERTICES =
       [ 1.0,  1.0,  1.0]
       [-1.0,  1.0,  1.0]
     ]
+    normals: [0, 0, 1]
     texcoords: [
       [0.0,  0.0]
       [1.0,  0.0]
@@ -20,6 +21,7 @@ CUBE_VERTICES =
       [ 1.0,  1.0, -1.0]
       [ 1.0, -1.0, -1.0]
     ]
+    normals: [0, 0, -1]
     texcoords: [
       [0.0,  0.0]
       [1.0,  0.0]
@@ -33,6 +35,7 @@ CUBE_VERTICES =
       [ 1.0,  1.0,  1.0]
       [ 1.0,  1.0, -1.0]
     ]
+    normals: [0, 1, 0]
     texcoords: [
       [0.0,  0.0]
       [1.0,  0.0]
@@ -46,6 +49,7 @@ CUBE_VERTICES =
       [ 1.0, -1.0,  1.0]
       [-1.0, -1.0,  1.0]
     ]
+    normals: [0, -1, 0]
     texcoords: [
       [0.0,  0.0]
       [1.0,  0.0]
@@ -59,6 +63,7 @@ CUBE_VERTICES =
       [ 1.0,  1.0,  1.0]
       [ 1.0, -1.0,  1.0]
     ]
+    normals: [1, 0, 0]
     texcoords: [
       [0.0,  0.0]
       [1.0,  0.0]
@@ -72,6 +77,7 @@ CUBE_VERTICES =
       [-1.0,  1.0,  1.0]
       [-1.0,  1.0, -1.0]
     ]
+    normals: [-1, 0, 0]
     texcoords: [
       [0.0,  0.0]
       [1.0,  0.0]
@@ -85,6 +91,7 @@ class CubeMaker
     @defaultSize = defaultSize
     @vertexCount = 0
     @positions = []
+    @normals = []
     @texcoords = []
     @indexes = []
 
@@ -92,10 +99,14 @@ class CubeMaker
     halfsize = size / 2
     start = @vertexCount
 
+    [nx, ny, nz] = CUBE_VERTICES[side].normals
     for [cx, cy, cz] in CUBE_VERTICES[side].positions
       @positions.push x + (cx * halfsize)
       @positions.push y + (cy * halfsize)
       @positions.push z + (cz * halfsize)
+      @normals.push nx
+      @normals.push ny
+      @normals.push nz
 
     if texture?
       facX = texture.width / texture.storedWidth
@@ -115,6 +126,7 @@ class CubeMaker
   makeVBO: (upload = true) ->
     vbo = new webglmc.VertexBufferObject 'TRIANGLES', @indexes.length
     vbo.addBuffer 'aVertexPosition', 3, @positions
+    vbo.addBuffer 'aVertexNormal', 3, @normals
     vbo.addBuffer 'aTextureCoord', 2, @texcoords
     vbo.addIndexBuffer @indexes
     if upload

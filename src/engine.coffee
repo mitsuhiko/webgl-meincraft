@@ -43,12 +43,16 @@ class Engine
     @_frustum = null
     @_mvp = null
     @_modelView = null
+    @_normal = null
 
   getModelView: ->
     @_modelView ?= mat4.multiply @view.top, @model.top
 
   getModelViewProjection: ->
     @_mvp ?= mat4.multiply @projection.top, this.getModelView(), mat4.create()
+
+  getNormal: ->
+    @_normal = mat4.toInverseMat3 @model.top
 
   getCurrentFrustum: ->
     @_frustum ?= new webglmc.Frustum this.getModelViewProjection()
@@ -71,6 +75,8 @@ class Engine
     @gl.uniformMatrix4fv loc, false, @projection.top if loc
     loc = @currentShader.getUniformLocation "uModelViewProjectionMatrix"
     @gl.uniformMatrix4fv loc, false, this.getModelViewProjection() if loc
+    loc = @currentShader.getUniformLocation "uNormalMatrix"
+    @gl.uniformMatrix3fv loc, false, this.getNormal() if loc
 
     @_deviceUniformDirty = false
 

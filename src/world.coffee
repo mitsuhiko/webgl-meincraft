@@ -46,7 +46,7 @@ class World
     @chunks = {}
     @cachedVBOs = {}
     @dirtyVBOs = {}
-    @shader = webglmc.resmgr.resources.simpleShader
+    @shader = webglmc.resmgr.resources['shaders/simple']
 
     @atlas = makeBlockAtlas()
 
