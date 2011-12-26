@@ -163,7 +163,9 @@ class World
       if !vbo
         continue
       [vec1, vec2] = makeBlockAABB x, y, z, CHUNK_SIZE
-      if frustum.testAABB(vec1, vec2) >= 0
+
+      # XXX: frustum culling is broken.  Check why
+      if true || frustum.testAABB(vec1, vec2) >= 0
         distance = vec3.subtract vec1, cameraPos
         rv.push vbo: vbo, distance: vec3.length(distance)
 
