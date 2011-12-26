@@ -1,0 +1,15 @@
+
+
+   -- WebGL Meincraft
+
+   A blatant minecraft clone.  Actually it's not even that, it's just
+   a voxel thingy WebGL engine that displays blocks in a minecraft style.
+
+   Currently the terrain.png in this repository is from some minecraft
+   texture set and a license violation.  Please don't sue me.
+
+   Code itself is BSD licensed, see LICENSE for more details.
+
+   Minecraft is a trademark of Mojang [ http://mojang.com/ ]
+
+
