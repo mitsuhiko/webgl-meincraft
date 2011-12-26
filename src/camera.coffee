@@ -14,13 +14,13 @@ class Camera
   lookAtOrigin: ->
     this.lookAt [0.0, 0.0, 0.0]
 
-  rotateScreenX: (rel) ->
+  rotateScreenX: (angle) ->
     rotmat = mat4.identity()
-    vec3.rotate rotmat, -angle, @up
+    mat4.rotate rotmat, -angle, @up
     mat4.multiplyVec3 rotmat, @forward
     vec3.normalize @forward
 
-  rotateScreenY: (rel) ->
+  rotateScreenY: (angle) ->
     cross = vec3.create()
     rotmat = mat4.identity()
     vec3.cross @up, @forward, cross
@@ -34,12 +34,12 @@ class Camera
 
   moveForward: (delta) ->
     vec = vec3.create()
-    vec3.multiply @forward, delta, vec
+    vec3.scale @forward, delta, vec
     vec3.add @position, vec
 
   moveBackward: (delta) ->
     vec = vec3.create()
-    vec3.multiply @forward, delta, vec
+    vec3.scale @forward, delta, vec
     vec3.subtract @position, vec
 
   strafeLeft: (delta) ->
@@ -47,7 +47,7 @@ class Camera
     cross = vec3.create()
     vec3.cross @up, @forward, cross
     vec3.normalize cross
-    vec3.multiply cross, delta, vec
+    vec3.scale cross, delta, vec
     vec3.add @position, vec
 
   strafeRight: (delta) ->
@@ -55,7 +55,7 @@ class Camera
     cross = vec3.create()
     vec3.cross @up, @forward, cross
     vec3.normalize cross
-    vec3.multiply cross, delta, vec
+    vec3.scale cross, delta, vec
     vec3.subtract @position, vec
 
   apply: ->

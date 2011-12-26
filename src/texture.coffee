@@ -43,18 +43,23 @@ textureFromImage = (image, options) ->
   texture.id = gl.createTexture()
 
   filtering = options.filtering || 'LINEAR'
-  filter = gl[filtering]
+  filter = mipmapFilter = gl[filtering]
 
   gl.bindTexture gl.TEXTURE_2D, texture.id
   gl.pixelStorei gl.UNPACK_FLIP_Y_WEBGL, true
   gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image
   gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter
-  gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter
 
   if options.clampToEdge
     gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE
     gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE
 
+  if options.mipmaps
+    mipmapFilter = gl["#{filtering}_MIPMAP_#{filtering}"]
+  gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mipmapFilter
+
+  if options.mipmaps
+    gl.generateMipmap gl.TEXTURE_2D
   gl.bindTexture gl.TEXTURE_2D, null
 
   console.debug "Created texture from '#{image.src}' [dim=#{image.width
