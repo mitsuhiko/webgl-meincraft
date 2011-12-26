@@ -6,9 +6,10 @@ requestAnimationFrame = (
   window.msRequestAnimationFrame)
 
 
-makeGLContext = (canvas, debug) ->
+makeGLContext = (canvas, debug, options) ->
   try
-    ctx = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    ctx = canvas.getContext('webgl', options) ||
+      canvas.getContext('experimental-webgl', options)
   catch e
     return null
   if debug
@@ -20,35 +21,44 @@ class Engine
   constructor: (canvas, debug = false) ->
     @debug = debug
     @canvas = canvas
-    @gl = makeGLContext canvas, @debug
-    @matrixState = new MatrixState
+    @gl = makeGLContext canvas, @debug, antialias: true
     @aspect = @canvas.width / @canvas.height
-    @modelView = @matrixState.add "uModelViewMatrix"
-    @projection = @matrixState.add "uProjectionMatrix"
     @currentShader = null
+
+    @modelView = new MatrixStack
+    @projection = new MatrixStack
+    @_frustum = null
+    @_mvp = null
+    @_deviceUniformDirty = false
 
     console.debug 'Render canvas =', @canvas
     console.debug 'WebGL context =', @gl
 
-  getCameraPos : ->
-    mvp = @modelView.top
-    vec3.create mvp[12], mvp[13], mvp[14]
+  markMVPDirty: ->
+    @_deviceUniformDirty = true
+    @_frustum = null
+    @_mvp = null
 
-  getCurrentFrustum : ->
-    new webglmc.Frustum mat4.multiply(webglmc.engine.projection.top,
-                                      webglmc.engine.modelView.top,
-                                      mat4.create())
+  getModelViewProjection: ->
+    @_mvp ?= mat4.multiply @modelView.top, @projection.top, mat4.create()
 
-  flushUniforms: (force = false) ->
-    if !(@matrixState.dirty || force)
+  getCurrentFrustum: ->
+    @_frustum ?= new webglmc.Frustum this.getModelViewProjection()
+
+  getCameraPos: ->
+    mvp = this.getModelViewProjection()
+    vec3.create [mvp[12], mvp[13], mvp[14]]
+
+  flushUniforms: ->
+    if !@_deviceUniformDirty
       return
-    {engine} = webglmc
-    for remoteName, matrix of @matrixState.mapping
-      loc = engine.currentShader.getUniformLocation remoteName
-      if loc < 0
-        continue
-      engine.gl.uniformMatrix4fv loc, false, matrix.top
-    @matrixState.dirty = false
+
+    loc = @currentShader.getUniformLocation "uModelViewMatrix"
+    @gl.uniformMatrix4fv loc, false, @modelView.top if loc
+    loc = @currentShader.getUniformLocation "uProjectionMatrix"
+    @gl.uniformMatrix4fv loc, false, @projection.top if loc
+
+    @_deviceUniformDirty = false
 
   mainloop: (iterate) ->
     lastTimestamp = Date.now()
@@ -60,33 +70,32 @@ class Engine
 
 
 class MatrixStack
-  constructor: (matrixState) ->
-    @matrixState = matrixState
+  constructor: ->
     @top = mat4.identity()
     @stack = []
 
   set: (value) ->
     @top = value
-    @matrixState.dirty = true
+    webglmc.engine.markMVPDirty()
 
   identity: ->
     this.set mat4.identity()
 
   multiply: (mat) ->
     mat4.multiply @top, mat
-    @matrixState.dirty = true
+    webglmc.engine.markMVPDirty()
 
   translate: (vector) ->
     mat4.translate @top, vector
-    @matrixState.dirty = true
+    webglmc.engine.markMVPDirty()
 
   rotate: (angle, axis) ->
     mat4.rotate @top, angle, axis
-    @matrixState.dirty = true
+    webglmc.engine.markMVPDirty()
 
   scale: (vector) ->
     mat4.scale @top, vector
-    @matrixState.dirty = true
+    webglmc.engine.markMVPDirty()
 
   push: (mat = null) ->
     if !mat
@@ -98,16 +107,7 @@ class MatrixStack
 
   pop: ->
     @top = @stack.pop()
-    @matrixState.dirty = true
-
-
-class MatrixState
-  constructor: ->
-    @dirty = false
-    @mapping = {}
-
-  add: (name) ->
-    @mapping[name] = new MatrixStack this
+    webglmc.engine.markMVPDirty()
 
 
 public = window.webglmc ?= {}

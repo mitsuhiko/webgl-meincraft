@@ -2,12 +2,13 @@ ChunkArray = Uint8Array || Array
 
 CUBE_SIZE = 1.0
 CHUNK_SIZE = 16
-TEXTURES_PER_ROW = 16
+TEXTURE_SLICE_SIZE = 64
 BLOCK_TYPES =
   air:          0
-  grass:        1
-  stone:        2
-  dirt:         3
+  stone:        1
+  planks:       2
+  grass:        3
+  granite:      4
 
 
 makeNewChunk = ->
@@ -48,10 +49,11 @@ class World
 
     index = blockType - 1
     totalWidth = @atlas.width
-    sliceSize = totalWidth / TEXTURES_PER_ROW
+    sliceSize = TEXTURE_SLICE_SIZE
+    texturesPerRow = totalWidth / sliceSize
 
-    x = (index % TEXTURES_PER_ROW) * sliceSize
-    y = (TEXTURES_PER_ROW - (parseInt index / TEXTURES_PER_ROW) - 1) * sliceSize
+    x = (index % texturesPerRow) * sliceSize
+    y = (texturesPerRow - (parseInt index / texturesPerRow) - 1) * sliceSize
     @blockTextures[blockType] = @atlas.slice x, y, sliceSize, sliceSize
 
   getBlock: (x, y, z) ->
@@ -164,7 +166,7 @@ class World
         continue
       [vec1, vec2] = makeBlockAABB x, y, z, CHUNK_SIZE
 
-      # XXX: frustum culling is broken.  Check why
+      # XXX: frustum culling does not work properly
       if true || frustum.testAABB(vec1, vec2) >= 0
         distance = vec3.subtract vec1, cameraPos
         rv.push vbo: vbo, distance: vec3.length(distance)

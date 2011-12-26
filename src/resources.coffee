@@ -1,7 +1,7 @@
 RESOURCES = [
   ['simpleShader', 'assets/simple.glsl'],
   ['terrain', 'assets/terrain.png.texture',
-   filtering: 'NEAREST', clampToEdge: true, mipmaps: true]
+   filtering: 'LINEAR', clampToEdge: true, mipmaps: true]
 ]
 
 
