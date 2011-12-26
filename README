@@ -10,6 +10,9 @@
 
    Code itself is BSD licensed, see LICENSE for more details.
 
+   What else?  The gl-matrix library was extended for vec4 support.
+   Stock won't work.
+
    Minecraft is a trademark of Mojang [ http://mojang.com/ ]
 
 
