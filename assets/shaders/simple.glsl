@@ -40,7 +40,7 @@ void directionalLight(in vec3 normal,
 void main(void)
 {
     vec4 darkness = vec4(0.1, 0.1, 0.1, 1.0);
-    vec4 ambient = vec4(0.3, 0.3, 0.3, 1.0);
+    vec4 ambient = vec4(0.4, 0.4, 0.4, 1.0);
     vec4 diffuse = vec4(0.0);
     vec4 specular = vec4(0.0);
     vec4 color = texture2D(uTexture, vec2(vTextureCoord.s, vTextureCoord.t));

@@ -106,7 +106,7 @@ $(document).ready ->
   initEngineAndGame(WIDTH, HEIGHT, DEBUG)
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.game = null
 public.resmgr = null
 public.engine = null

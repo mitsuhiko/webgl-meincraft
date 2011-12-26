@@ -34,6 +34,6 @@ class WorldGenerator
       @world.setBlock x, y, z, webglmc.BLOCK_TYPES.stone
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.WorldGenerator = WorldGenerator
 public.WorldGeneratorProcess = WorldGeneratorProcess

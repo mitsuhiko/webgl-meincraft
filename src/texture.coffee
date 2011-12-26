@@ -68,6 +68,6 @@ textureFromImage = (image, options) ->
   texture
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.Texture = Texture
 public.textureFromImage = textureFromImage

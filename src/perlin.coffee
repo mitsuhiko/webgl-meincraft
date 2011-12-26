@@ -119,5 +119,5 @@ class PerlinGenerator
     total
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.PerlinGenerator = PerlinGenerator

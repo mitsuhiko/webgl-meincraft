@@ -180,6 +180,6 @@ class World
       vbo.draw()
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.World = World
 public.BLOCK_TYPES = BLOCK_TYPES

@@ -7,7 +7,7 @@ else
 
 
 findClass = (name) ->
-  rv = this
+  rv = self
   for piece in name.split(/\./)
     rv = rv[piece]
   rv
@@ -22,6 +22,8 @@ startProcess = (workerName, args, callback) ->
     else if data.type == 'console'
       console[data.level]("%c[#{workerName}]: ",
         'background: #D4F2F3; color: #133C3D', data.args...)
+  worker.addEventListener 'error', (event) =>
+    console.error 'Error in worker: ', event.message
   console.log "Starting worker #{workerName} args=", args
   worker.postMessage cmd: '__init__', worker: workerName, args: args
   return new ProcessProxy worker, workerName
@@ -46,7 +48,7 @@ class Process
   run: ->
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.Process = Process
 public.startProcess = startProcess
 
@@ -83,7 +85,7 @@ if startWorkerSupport
     if data.cmd == '__init__'
       cls = findClass data.worker
       instance = new cls data.args...
-      console.log 'Started up'
+      console.log 'Started up args=', data.args
       kickOff()
     else if instance
       executeCommand data.cmd, data.args

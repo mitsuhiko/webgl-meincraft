@@ -85,5 +85,5 @@ class VertexBufferObject
       gl.drawArrays drawMode, 0, @count
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.VertexBufferObject = VertexBufferObject

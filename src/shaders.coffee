@@ -88,6 +88,6 @@ class Shader
     webglmc.engine.gl.useProgram @prog
 
 
-public = this.webglmc ?= {}
+public = self.webglmc ?= {}
 public.Shader = Shader
 public.loadShader = loadShader
