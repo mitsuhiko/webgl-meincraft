@@ -1,0 +1,4 @@
+body { background: #222; font-family: 'Helvetica Neue', 'Helvetica', sans-serif; margin: 40px 0; }
+h1 { text-align: center; margin: 0; color: #ddd; font-weight: normal; font-size: 30px; }
+p { font-weight: normal; font-size: 14px; text-align: center; margin: 0; color: white; }
+canvas { display: block; margin: 40px auto; border: 1px solid #111; }

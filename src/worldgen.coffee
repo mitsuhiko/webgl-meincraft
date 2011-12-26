@@ -1,6 +1,6 @@
 fillInDefaultOptions = (options) ->
-  options.maxHeight ?= 16
-  options.dampingFactor ?= 0.001
+  options.maxHeight ?= 32
+  options.dampingFactor ?= 0.02
   options
 
 

@@ -1,4 +1,4 @@
-WIDTH = 640
+WIDTH = 800
 HEIGHT = 480
 DEBUG = true
 
@@ -29,8 +29,9 @@ class Game
 
     @world = new webglmc.World
     worldGen = new webglmc.WorldGenerator @world, 42
-    for x in [-32..32]
-      for z in [-32..32]
+
+    for x in [-48..48]
+      for z in [-48..48]
         worldGen.generateChunkColumn x, z
 
   initEventHandlers: ->

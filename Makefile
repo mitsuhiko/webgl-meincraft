@@ -3,3 +3,6 @@ watch-compile:
 
 compile:
 	coffee -co compiled src/*.coffee
+
+upload:
+	rsync -a . pocoo.org:public_html/webglmc/
