@@ -44,6 +44,7 @@ class Engine
     @_mvp = null
     @_modelView = null
     @_normal = null
+    @_iview = null
 
   getModelView: ->
     @_modelView ?= mat4.multiply @view.top, @model.top
@@ -57,9 +58,12 @@ class Engine
   getCurrentFrustum: ->
     @_frustum ?= new webglmc.Frustum this.getModelViewProjection()
 
+  getInverseView: ->
+    @_iview ?= mat4.inverse @view.top, mat4.create()
+
   getCameraPos: ->
-    mvp = this.getModelViewProjection()
-    vec3.create [mvp[12], mvp[13], mvp[14]]
+    iview = this.getInverseView()
+    vec3.create [iview[12], iview[13], iview[14]]
 
   flushUniforms: ->
     if !@_deviceUniformDirty

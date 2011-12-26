@@ -24,15 +24,10 @@ class Game
 
     # Initialize a small new world
     @cam = new webglmc.Camera
-    @cam.position = vec3.create([0.0, 40.0, -60.0])
-    @cam.lookAtOrigin()
+    @cam.position = vec3.create([0.0, 50.0, 20.0])
+    @cam.lookAt vec3.create([0.0, 40.0, 0.0])
 
-    @world = new webglmc.World
-    @worldGen = new webglmc.WorldGenerator @world, 42
-
-    for x in [-48..48]
-      for z in [-48..48]
-        @worldGen.generateChunkColumn x, z
+    @world = new webglmc.World 42
 
   initEventHandlers: ->
     $('body')
@@ -79,6 +74,8 @@ class Game
       @cam.rotateScreenX -dt * 0.5
     if @actions.lookRight
       @cam.rotateScreenX dt * 0.5
+    @cam.apply()
+    @world.requestMissingChunks()
 
   render: ->
     {gl, modelView} = webglmc.engine
@@ -86,7 +83,6 @@ class Game
     gl.clearColor 0.0, 0.0, 0.0, 1.0
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
-    @cam.apply()
     @world.draw()
 
 

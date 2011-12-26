@@ -1,37 +1,50 @@
-fillInDefaultOptions = (options) ->
-  options.maxHeight ?= 32
-  options.dampingFactor ?= 0.02
-  options
-
-
 class WorldGeneratorProcess extends webglmc.Process
   constructor: (seed) ->
     @perlin = new webglmc.PerlinGenerator seed
 
-  generateChunk: (x, y, z) ->
-    this.notifyParent "Generate chunk x=#{x}, y=#{y}, z=#{z}"
+  generateChunk: (def) ->
+    blockTypes = webglmc.BLOCK_TYPES
+    {chunkSize, x, y, z, maxHeight} = def
+    chunk = new Array(Math.pow(chunkSize, 3))
+    offX = x * chunkSize
+    offY = y * chunkSize
+    offZ = z * chunkSize
+
+    for cz in [0...chunkSize]
+      for cx in [0...chunkSize]
+        nx = (offX + cx) * 0.01
+        nz = (offZ + cz) * 0.01
+        noise = @perlin.simpleNoise2D(nx, nz) * 0.5 + 0.5
+        columnHeight = noise * maxHeight
+
+        for cy in [0...chunkSize]
+          block = 0
+          if cy + offY <= columnHeight
+            block = blockTypes.grass
+          chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] = block
+
+    this.notifyParent x: x, y: y, z: z, chunk: chunk
 
 
 class WorldGenerator
-  constructor: (world, seed, options = {}) ->
-    @options = fillInDefaultOptions options
+  constructor: (world) ->
     @world = world
-    @perlin = new webglmc.PerlinGenerator seed
+    @maxHeight = 48
 
     # Spawn background worker for the actual world generation.
-    gen = webglmc.startProcess 'webglmc.WorldGeneratorProcess', [seed], (data) =>
-      console.log 'Worker result', data
-    @backgroundGenerator = gen
+    @backgroundGenerator = webglmc.startProcess
+      process:          'webglmc.WorldGeneratorProcess'
+      args:             [world.seed]
+      onNotification:   (data) =>
+        @world.setChunk data.x, data.y, data.z, data.chunk
 
-  getHeight: (x, z) ->
-    noise = @perlin.simpleNoise2D(@options.dampingFactor * x,
-                                  @options.dampingFactor * z)
-    parseInt (noise * 0.5 + 0.5) * @options.maxHeight
-
-  generateChunkColumn: (x, z) ->
-    height = this.getHeight x, z
-    for y in [0...height]
-      @world.setBlock x, y, z, webglmc.BLOCK_TYPES.stone
+  generateChunk: (x, y, z) ->
+    @backgroundGenerator.generateChunk
+      x:          x
+      y:          y
+      z:          z
+      maxHeight:  @maxHeight
+      chunkSize:  @world.chunkSize
 
 
 public = self.webglmc ?= {}

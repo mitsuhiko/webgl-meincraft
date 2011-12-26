@@ -13,31 +13,39 @@ findClass = (name) ->
   rv
 
 
-startProcess = (workerName, args, callback) ->
+startProcess = (options) ->
+  args = options.args ? []
+  callback = options.onNotification
+
   worker = new Worker workerBase + 'process.js'
   worker.addEventListener 'message', (event) =>
     {data} = event
     if data.type == 'notify'
-      callback data.value
+      if callback?
+        callback data.value
     else if data.type == 'console'
-      console[data.level]("%c[#{workerName}]: ",
+      console[data.level]("%c[#{options.process}]: ",
         'background: #D4F2F3; color: #133C3D', data.args...)
+
   worker.addEventListener 'error', (event) =>
     console.error 'Error in worker: ', event.message
-  console.log "Starting worker #{workerName} args=", args
-  worker.postMessage cmd: '__init__', worker: workerName, args: args
-  return new ProcessProxy worker, workerName
+
+  console.log "Starting process #{options.process} as worker args=", args
+  worker.postMessage cmd: '__init__', worker: options.process, args: args
+  return new ProcessProxy worker, options.process
 
 
 class ProcessProxy
 
-  constructor: (worker, workerName) ->
+  constructor: (worker, processClass) ->
     @_worker = worker
-    for key, callable of findClass(workerName).prototype
+    for key, callable of findClass(processClass).prototype
       if key in ['constructor', 'run', 'notifyParent']
         continue
       do (key) =>
-        this[key] = (args...) -> this._worker.postMessage cmd: key, args: args
+        this[key] = (args...) ->
+          this._worker.postMessage cmd: key, args: args
+          undefined
 
 
 class Process
@@ -54,7 +62,7 @@ public.startProcess = startProcess
 
 
 if startWorkerSupport
-  importScripts '../lib/gl-matrix.js', 'perlin.js', 'worldgen.js'
+  importScripts '../lib/gl-matrix.js', 'perlin.js', 'world.js', 'worldgen.js'
 
   instance = null
   commandQueue = []
