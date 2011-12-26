@@ -29,7 +29,7 @@ class WorldGeneratorProcess extends webglmc.Process
 class WorldGenerator
   constructor: (world) ->
     @world = world
-    @maxHeight = 48
+    @maxHeight = 32
 
     # Spawn background worker for the actual world generation.
     @backgroundGenerator = webglmc.startProcess
