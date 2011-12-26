@@ -25,6 +25,11 @@ class Engine
     @aspect = @canvas.width / @canvas.height
     @currentShader = null
 
+    @gl.enable @gl.DEPTH_TEST
+    @gl.depthFunc @gl.LEQUAL
+    @gl.enable @gl.CULL_FACE
+    @gl.cullFace @gl.BACK
+
     @modelView = new MatrixStack
     @projection = new MatrixStack
     @_frustum = null
