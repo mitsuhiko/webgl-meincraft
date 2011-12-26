@@ -1,12 +1,14 @@
 ChunkArray = Uint8Array
 
 CUBE_SIZE = 1.0
-VIEW_DISTANCE = 4
+CHUNK_SIZE = 32
+VIEW_DISTANCE = 2
 BLOCK_TYPES =
   air:          0
   grass:        1
   stone:        2
   granite:      3
+  rock:         4
 
 
 parseKey = (key) ->
@@ -37,10 +39,12 @@ forceChunkType = (chunk) ->
 
 
 class World
-  constructor: (seed) ->
+  constructor: (seed = null) ->
+    if seed == null
+      seed = parseInt Math.random() * 10000000
     @seed = seed
     @generator = new webglmc.WorldGenerator this
-    @chunkSize = 16
+    @chunkSize = CHUNK_SIZE
     @chunks = {}
     @cachedVBOs = {}
     @dirtyVBOs = {}
@@ -143,7 +147,9 @@ class World
       maker.makeVBO()
 
   markVBODirty: (x, y, z) ->
-    @dirtyVBOs["#{x}|#{y}|#{z}"] = true
+    key = "#{x}|#{y}|#{z}"
+    if @cachedVBOs[key]
+      @dirtyVBOs[key] = true
 
   getChunkVBO: (x, y, z) ->
     key = "#{x}|#{y}|#{z}"
@@ -178,9 +184,8 @@ class World
       vbo = this.getChunkVBO x, y, z
       if !vbo
         continue
-      [vec1, vec2] = this.makeChunkAABB x, y, z
 
-      # XXX: frustum culling does not work properly
+      [vec1, vec2] = this.makeChunkAABB x, y, z
       if frustum.testAABB(vec1, vec2) >= 0
         distance = vec3.subtract vec1, cameraPos
         rv.push vbo: vbo, distance: vec3.length(distance)
@@ -191,15 +196,14 @@ class World
 
   chunkAtCameraPosition: ->
     [x, y, z] = webglmc.engine.getCameraPos()
-    [Math.floor(x / CUBE_SIZE / @chunkSize),
-     Math.floor(y / CUBE_SIZE / @chunkSize),
-     Math.floor(z / CUBE_SIZE / @chunkSize)]
+    [Math.floor(x / CUBE_SIZE / @chunkSize + 0.5),
+     Math.floor(y / CUBE_SIZE / @chunkSize + 0.5),
+     Math.floor(z / CUBE_SIZE / @chunkSize + 0.5)]
 
   requestMissingChunks: ->
     [x, y, z] = this.chunkAtCameraPosition()
-    height = Math.ceil @generator.maxHeight / @chunkSize
     for cx in [x - VIEW_DISTANCE..x + VIEW_DISTANCE]
-      for cy in [0..height]
+      for cy in [y - VIEW_DISTANCE..y + VIEW_DISTANCE]
         for cz in [z - VIEW_DISTANCE..z + VIEW_DISTANCE]
           chunk = this.getChunk cx, cy, cz
           if !chunk

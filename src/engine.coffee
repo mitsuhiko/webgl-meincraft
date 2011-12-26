@@ -21,6 +21,10 @@ class Engine
   constructor: (canvas, debug = false) ->
     @debug = debug
     @canvas = canvas
+    @throbber = $('<img src=assets/throbber.gif id=throbber>')
+      .appendTo('body')
+      .hide()
+    @throbberLevel = 0
 
     # To force antialiasing pass antialias: true as options
     @gl = makeGLContext canvas, @debug
@@ -39,6 +43,14 @@ class Engine
 
     console.debug 'Render canvas =', @canvas
     console.debug 'WebGL context =', @gl
+
+  pushThrobber: ->
+    if @throbberLevel++ == 0
+      @throbber.fadeIn()
+
+  popThrobber: ->
+    if --@throbberLevel == 0
+      @throbber.fadeOut()
 
   markMVPDirty: ->
     @_deviceUniformDirty = true

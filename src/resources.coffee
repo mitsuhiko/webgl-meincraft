@@ -3,6 +3,7 @@ RESOURCES = [
   ['blocks/grass', 'assets/textures/grass.png']
   ['blocks/granite', 'assets/textures/granite.png']
   ['blocks/stone', 'assets/textures/stone.png']
+  ['blocks/rock', 'assets/textures/rock.png']
 ]
 
 

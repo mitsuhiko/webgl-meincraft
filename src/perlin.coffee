@@ -108,12 +108,80 @@ class PerlinGenerator
 
     noise * 70.0
 
+  simpleNoise3D: (x, y, z) ->
+    noise = 0.0
+
+    pt = (i) => @permutationTable[i % @period]
+    admix = (x, y, z, g) ->
+      tt = 0.6 - Math.pow(x, 2.0) - Math.pow(y, 2.0) - Math.pow(z, 2.0)
+      if tt > 0.0 && !isNaN g
+        gvec = gradientVectors[g]
+        noise += Math.pow(tt, 4.0) * (gvec[0] * x + gvec[1] * y + gvec[2] * z)
+
+    s = (x + y + z) * F3
+    i = Math.floor x + s
+    j = Math.floor y + s
+    k = Math.floor z + s
+    t = (i + j + k) * G3
+    x0 = x - (i - t)
+    y0 = y - (j - t)
+    z0 = z - (k - t)
+
+    if x0 >= y0
+      if y0 >= z0
+        i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0
+      else if (x0 >= z0)
+        i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1
+      else
+        i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1
+    else
+      if (y0 < z0)
+        i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1
+      else if (x0 < z0)
+        i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1
+      else
+        i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0
+
+    x1 = x0 - i1 + G3
+    y1 = y0 - j1 + G3
+    z1 = z0 - k1 + G3
+    x2 = x0 - i2 + 2.0 * G3
+    y2 = y0 - j2 + 2.0 * G3
+    z2 = z0 - k2 + 2.0 * G3
+    x3 = x0 - 1.0 + 3.0 * G3
+    y3 = y0 - 1.0 + 3.0 * G3
+    z3 = z0 - 1.0 + 3.0 * G3
+    ii = mod i, @period
+    jj = mod j, @period
+    kk = mod k, @period
+    gi0 = pt(ii + pt(jj + pt(kk))) % 12
+    gi1 = pt(ii + i1 + pt(jj + j1 + pt(kk + k1))) % 12
+    gi2 = pt(ii + i2 + pt(jj + j2 + pt(kk + k2))) % 12
+    gi3 = pt(ii + 1 + pt(jj + 1 + pt(kk + 1))) % 12
+
+    admix x0, y0, z0, gi0
+    admix x1, y1, z1, gi1
+    admix x2, y2, z2, gi2
+    admix x3, y3, z3, gi3
+
+    noise * 32.0
+
   noise2D: (x, y, octaves = 1) ->
     total = 0.0
     freq = 1.0
 
     for i in [0...octaves]
       total += this.simpleNoise2D(x * freq, y * freq) / freq
+      freq *= 2.0
+
+    total
+
+  noise3D: (x, y, z, octaves = 1) ->
+    total = 0.0
+    freq = 1.0
+
+    for i in [0...octaves]
+      total += this.simpleNoise3D(x * freq, y * freq, z * freq) / freq
       freq *= 2.0
 
     total

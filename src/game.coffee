@@ -27,7 +27,7 @@ class Game
     @cam.position = vec3.create([0.0, 50.0, 20.0])
     @cam.lookAt vec3.create([0.0, 40.0, 0.0])
 
-    @world = new webglmc.World 42
+    @world = new webglmc.World
 
   initEventHandlers: ->
     $('body')
