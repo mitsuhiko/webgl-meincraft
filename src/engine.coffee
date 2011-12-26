@@ -22,6 +22,7 @@ class Engine
     @canvas = canvas
     @gl = makeGLContext canvas, @debug
     @matrixState = new MatrixState
+    @aspect = @canvas.width / @canvas.height
     @modelView = @matrixState.add "uModelViewMatrix"
     @projection = @matrixState.add "uProjectionMatrix"
     @currentShader = null

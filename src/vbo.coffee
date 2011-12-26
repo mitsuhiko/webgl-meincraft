@@ -47,7 +47,6 @@ class VertexBufferObject
       gl.bindBuffer buffer.type, id
       gl.bufferData buffer.type, buffer.vertices, gl.STATIC_DRAW
       @buffers[name] = new RemoteBuffer name, buffer.size, id
-    console.debug "Uploaded VBO", this
 
   destroy: ->
     gl = webglmc.engine.gl
@@ -56,7 +55,6 @@ class VertexBufferObject
         gl.deleteBuffer buffer.id
     @buffers = {}
     @count = 0
-    console.debug "Destroyed VBO", this
 
   draw: ->
     # XXX: support drawing of stuff not yet on the device

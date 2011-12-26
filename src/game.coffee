@@ -7,18 +7,16 @@ class Game
   initGame: ->
     {engine} = webglmc
 
-    # Default perspective matrix
-    aspect = engine.canvas.width / engine.canvas.height
-    engine.projection.set mat4.perspective(45.0, aspect, 0.1, 1000.0)
+    # Initialize a small new world
+    @cam = new webglmc.Camera
+    @cam.position = vec3.create([0.0, 40.0, -60.0])
+    @cam.lookAtOrigin()
 
-    # Initialize the test world
-    blockTypes = webglmc.BLOCK_TYPES
     @world = new webglmc.World
-    @world.setBlock 0, 0, -2, blockTypes.grass
-    @world.setBlock 0, 0, -1, blockTypes.grass
-    @world.setBlock 0, 0, 0, blockTypes.stone
-    @world.setBlock 0, 0, 1, blockTypes.grass
-    @world.setBlock 0, 0, 2, blockTypes.grass
+    worldGen = new webglmc.WorldGenerator @world, 42
+    for x in [-32..32]
+      for z in [-32..32]
+        worldGen.generateChunkColumn x, z
 
   run: ->
     webglmc.resmgr.wait =>
@@ -40,8 +38,7 @@ class Game
     gl.depthFunc gl.LEQUAL
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
-    modelView.identity()
-    modelView.translate([0.0, -3.0, -13.0])
+    @cam.apply()
     @world.draw()
 
 
