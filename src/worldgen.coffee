@@ -18,7 +18,7 @@ class WorldGenerator
   generateChunkColumn: (x, z) ->
     height = this.getHeight x, z
     for y in [0...height]
-      @world.setBlock x, y, z, webglmc.BLOCK_TYPES.grass
+      @world.setBlock x, y, z, webglmc.BLOCK_TYPES.stone
 
 
 public = window.webglmc ?= {}

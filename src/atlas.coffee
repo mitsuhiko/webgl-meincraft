@@ -32,13 +32,13 @@ class AtlasNode
       return this
 
     if @width - width > @height - height
-      left = new AtlasNode @x, @y, width, @height
-      right = new AtlasNode @x + width, @y, @width - width, @height
+      @left = new AtlasNode @x, @y, width, @height
+      @right = new AtlasNode @x + width, @y, @width - width, @height
     else
-      left = new AtlasNode @x, @y, @width, height
-      right = new AtlasNode @x, @y + height, @width, @height - height
+      @left = new AtlasNode @x, @y, @width, height
+      @right = new AtlasNode @x, @y + height, @width, @height - height
 
-    left.insertChild(width, height)
+    @left.insertChild(width, height)
 
 
 class AtlasBuilder
@@ -59,7 +59,7 @@ class AtlasBuilder
       for rx in [0...times]
         posx = x + (rx * img.width)
         @ctx.drawImage img, 0, 0, img.width, img.height,
-                       rx, ry, img.width, img.height
+                       posx, posy, img.width, img.height
 
   add: (key, img, gridAdd = @gridAdd) ->
     width = img.width + @padding * 2
