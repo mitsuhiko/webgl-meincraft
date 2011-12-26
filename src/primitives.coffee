@@ -104,9 +104,7 @@ class CubeMaker
       @positions.push x + (cx * halfsize)
       @positions.push y + (cy * halfsize)
       @positions.push z + (cz * halfsize)
-      @normals.push nx
-      @normals.push ny
-      @normals.push nz
+      @normals.push nx, ny, nz
 
     if texture?
       facX = texture.width / texture.storedWidth

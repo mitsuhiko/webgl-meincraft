@@ -1,3 +1,25 @@
+planeTest = (plane, vec1, vec2) ->
+  p1 = vec1[0] * plane[0]
+  p2 = vec1[1] * plane[1]
+  p3 = vec1[2] * plane[2]
+  d1 = vec2[0] * plane[0]
+  d2 = vec2[1] * plane[1]
+  d3 = vec2[2] * plane[2]
+  w = plane[3]
+  points = 0
+
+  if p1 + p2 + p3 + w > 0 then points++
+  if p1 + p2 + d3 + w > 0 then points++
+  if p1 + d2 + p3 + w > 0 then points++
+  if p1 + d2 + d3 + w > 0 then points++
+  if d1 + p2 + p3 + w > 0 then points++
+  if d1 + p2 + d3 + w > 0 then points++
+  if d1 + d2 + p3 + w > 0 then points++
+  if d1 + d2 + d3 + w > 0 then points++
+
+  points
+
+
 class Frustum
   constructor: (mvp) ->
     @planes = (vec4.create() for x in [1..6])
@@ -50,32 +72,11 @@ class Frustum
     vec[3] = mvp[15] - mvp[14]
     vec4.normalize vec
 
-  planeTest: (plane, vec1, vec2) ->
-    p1 = vec1[0] * plane[0]
-    p2 = vec1[1] * plane[1]
-    p3 = vec1[2] * plane[2]
-    d1 = vec2[0] * plane[0]
-    d2 = vec2[1] * plane[1]
-    d3 = vec2[2] * plane[2]
-    w = plane[3]
-    points = 0
-
-    if p1 + p2 + p3 + w > 0 then points++
-    if p1 + p2 + d3 + w > 0 then points++
-    if p1 + d2 + p3 + w > 0 then points++
-    if p1 + d2 + d3 + w > 0 then points++
-    if d1 + p2 + p3 + w > 0 then points++
-    if d1 + p2 + d3 + w > 0 then points++
-    if d1 + d2 + p3 + w > 0 then points++
-    if d1 + d2 + d3 + w > 0 then points++
-
-    points
-
   testAABB: (vec1, vec2) ->
     pointsVisible = 0
 
     for plane in @planes
-      if (rv = this.planeTest(plane, vec1, vec2)) == 0
+      if (rv = planeTest(plane, vec1, vec2)) == 0
         return -1
       pointsVisible += rv
 

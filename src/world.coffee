@@ -12,11 +12,12 @@ BLOCK_TYPES =
 makeNewChunk = ->
   new ChunkArray CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
 
-makeBlockAABB = (x, y, z, size) ->
-  v1 = [CUBE_SIZE * x - CUBE_SIZE / 2,
-        CUBE_SIZE * y - CUBE_SIZE / 2,
-        CUBE_SIZE * z - CUBE_SIZE / 2]
-  v2 = [CUBE_SIZE * size, CUBE_SIZE * size, CUBE_SIZE * size]
+makeChunkAABB = (x, y, z) ->
+  size = CUBE_SIZE * CHUNK_SIZE
+  v1 = [size * x - CUBE_SIZE / 2,
+        size * y - CUBE_SIZE / 2,
+        size * z - CUBE_SIZE / 2]
+  v2 = [size, size, size]
   [vec3.create(v1), vec3.add(v1, v2, vec3.create())]
 
 
@@ -161,10 +162,10 @@ class World
       vbo = this.getChunkVBO x, y, z
       if !vbo
         continue
-      [vec1, vec2] = makeBlockAABB x, y, z, CHUNK_SIZE
+      [vec1, vec2] = makeChunkAABB x, y, z
 
       # XXX: frustum culling does not work properly
-      if true || frustum.testAABB(vec1, vec2) >= 0
+      if frustum.testAABB(vec1, vec2) >= 0
         distance = vec3.subtract vec1, cameraPos
         rv.push vbo: vbo, distance: vec3.length(distance)
 
