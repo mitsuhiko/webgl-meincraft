@@ -42,7 +42,7 @@ class AtlasNode
 
 
 class AtlasBuilder
-  constructor: (width, height = width, options = {}) ->
+  constructor: (width, height, options = {}) ->
     @canvas = $('<canvas></canvas>')
       .attr('width', width)
       .attr('height', height)[0]

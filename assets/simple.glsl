@@ -4,7 +4,7 @@ varying highp vec2 vTextureCoord;
 #ifdef VERTEX_SHADER
 void main(void)
 {
-    gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aVertexPosition, 1.0);
+    gl_Position = uModelViewProjectionMatrix * vec4(aVertexPosition, 1.0);
     vTextureCoord = aTextureCoord;
 }
 #endif

@@ -65,7 +65,7 @@ class Camera
     vec3.add ref, @forward
     mat4.lookAt @position, ref, @up, mv
     engine.projection.set mat4.perspective(@fov, engine.aspect, @near, @far)
-    engine.modelView.set mv
+    engine.view.set mv
 
 
 public = window.webglmc ?= {}

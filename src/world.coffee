@@ -32,7 +32,7 @@ mod = (x, y) ->
     
 
 makeBlockAtlas = ->
-  builder = new webglmc.AtlasBuilder 512, 512, gridAdd: true
+  builder = new webglmc.AtlasBuilder 1024, 1024, gridAdd: true
   for key, blockID of BLOCK_TYPES
     if blockID == 0
       continue

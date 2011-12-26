@@ -30,11 +30,10 @@ class Engine
     @gl.enable @gl.CULL_FACE
     @gl.cullFace @gl.BACK
 
-    @modelView = new MatrixStack
+    @model = new MatrixStack
+    @view = new MatrixStack
     @projection = new MatrixStack
-    @_frustum = null
-    @_mvp = null
-    @_deviceUniformDirty = false
+    this.markMVPDirty()
 
     console.debug 'Render canvas =', @canvas
     console.debug 'WebGL context =', @gl
@@ -43,9 +42,13 @@ class Engine
     @_deviceUniformDirty = true
     @_frustum = null
     @_mvp = null
+    @_modelView = null
+
+  getModelView: ->
+    @_modelView ?= mat4.multiply @view.top, @model.top
 
   getModelViewProjection: ->
-    @_mvp ?= mat4.multiply @modelView.top, @projection.top, mat4.create()
+    @_mvp ?= mat4.multiply @projection.top, this.getModelView(), mat4.create()
 
   getCurrentFrustum: ->
     @_frustum ?= new webglmc.Frustum this.getModelViewProjection()
@@ -58,10 +61,16 @@ class Engine
     if !@_deviceUniformDirty
       return
 
+    loc = @currentShader.getUniformLocation "uModelMatrix"
+    @gl.uniformMatrix4fv loc, false, @model.top if loc
+    loc = @currentShader.getUniformLocation "uViewMatrix"
+    @gl.uniformMatrix4fv loc, false, @view.top if loc
     loc = @currentShader.getUniformLocation "uModelViewMatrix"
-    @gl.uniformMatrix4fv loc, false, @modelView.top if loc
+    @gl.uniformMatrix4fv loc, false, this.getModelView() if loc
     loc = @currentShader.getUniformLocation "uProjectionMatrix"
     @gl.uniformMatrix4fv loc, false, @projection.top if loc
+    loc = @currentShader.getUniformLocation "uModelViewProjectionMatrix"
+    @gl.uniformMatrix4fv loc, false, this.getModelViewProjection() if loc
 
     @_deviceUniformDirty = false
 
