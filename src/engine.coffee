@@ -21,7 +21,9 @@ class Engine
   constructor: (canvas, debug = false) ->
     @debug = debug
     @canvas = canvas
-    @gl = makeGLContext canvas, @debug, antialias: true
+
+    # To force antialiasing pass antialias: true as options
+    @gl = makeGLContext canvas, @debug
     @aspect = @canvas.width / @canvas.height
     @currentShader = null
 
