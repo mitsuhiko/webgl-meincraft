@@ -130,5 +130,5 @@ class MatrixStack
     webglmc.engine.markMVPDirty()
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.Engine = Engine

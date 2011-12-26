@@ -12,5 +12,5 @@ makeDefaultResourceManager = ->
   resmgr
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.makeDefaultResourceManager = makeDefaultResourceManager

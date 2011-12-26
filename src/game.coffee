@@ -28,11 +28,11 @@ class Game
     @cam.lookAtOrigin()
 
     @world = new webglmc.World
-    worldGen = new webglmc.WorldGenerator @world, 42
+    @worldGen = new webglmc.WorldGenerator @world, 42
 
     for x in [-48..48]
       for z in [-48..48]
-        worldGen.generateChunkColumn x, z
+        @worldGen.generateChunkColumn x, z
 
   initEventHandlers: ->
     $('body')
@@ -106,7 +106,7 @@ $(document).ready ->
   initEngineAndGame(WIDTH, HEIGHT, DEBUG)
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.game = null
 public.resmgr = null
 public.engine = null

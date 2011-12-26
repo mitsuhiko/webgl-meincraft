@@ -76,7 +76,7 @@ class PerlinGenerator
     pt = (i) => @permutationTable[i % @period]
     admix = (x, y, g) ->
       tt = 0.5 - Math.pow(x, 2.0) - Math.pow(y, 2.0)
-      if (tt > 0.0)
+      if tt > 0.0 && !isNaN g
         gvec = gradientVectors[g]
         noise += Math.pow(tt, 4.0) * (gvec[0] * x + gvec[1] * y)
 
@@ -119,5 +119,5 @@ class PerlinGenerator
     total
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.PerlinGenerator = PerlinGenerator

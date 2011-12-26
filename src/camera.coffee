@@ -68,5 +68,5 @@ class Camera
     engine.view.set mv
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.Camera = Camera

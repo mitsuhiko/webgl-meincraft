@@ -132,5 +132,5 @@ class CubeMaker
     vbo
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.CubeMaker = CubeMaker

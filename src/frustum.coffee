@@ -83,5 +83,5 @@ class Frustum
     if pointsVisible == 48 then 1 else 0
 
 
-public = window.webglmc ?= {}
+public = this.webglmc ?= {}
 public.Frustum = Frustum
