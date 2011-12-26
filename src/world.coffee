@@ -2,13 +2,11 @@ ChunkArray = Uint8Array || Array
 
 CUBE_SIZE = 1.0
 CHUNK_SIZE = 16
-TEXTURE_SLICE_SIZE = 64
 BLOCK_TYPES =
   air:          0
-  stone:        1
-  planks:       2
-  grass:        3
-  granite:      4
+  grass:        1
+  stone:        2
+  granite:      3
 
 
 makeNewChunk = ->
@@ -31,6 +29,16 @@ div = (x, y) ->
 
 mod = (x, y) ->
   (x % y + y) % y
+    
+
+makeBlockAtlas = ->
+  builder = new webglmc.AtlasBuilder 512
+  for key, blockID of BLOCK_TYPES
+    if blockID == 0
+      continue
+    img = webglmc.resmgr.resources["blocks/#{key}"]
+    builder.add blockID, img
+  builder.makeAtlas mipmaps: true
 
 
 class World
@@ -38,23 +46,12 @@ class World
     @chunks = {}
     @cachedVBOs = {}
     @dirtyVBOs = {}
-    @atlas = webglmc.resmgr.resources.terrain
     @shader = webglmc.resmgr.resources.simpleShader
-    @blockTextures = {}
 
-  getBlockTexture: (blockType) ->
-    rv = @blockTextures[blockType]
-    if rv?
-      return rv
+    @atlas = makeBlockAtlas()
 
-    index = blockType - 1
-    totalWidth = @atlas.width
-    sliceSize = TEXTURE_SLICE_SIZE
-    texturesPerRow = totalWidth / sliceSize
-
-    x = (index % texturesPerRow) * sliceSize
-    y = (texturesPerRow - (parseInt index / texturesPerRow) - 1) * sliceSize
-    @blockTextures[blockType] = @atlas.slice x, y, sliceSize, sliceSize
+  getBlockTexture: (blockID) ->
+    @atlas.slices[blockID]
 
   getBlock: (x, y, z) ->
     cx = div x, CHUNK_SIZE
@@ -115,23 +112,23 @@ class World
         return chunk[cx + cy * CHUNK_SIZE + cz * CHUNK_SIZE * CHUNK_SIZE] == 0
       return this.getBlock(offX + cx, offY + cy, offZ + cz) == 0
       
-    addSide = (side, type) =>
-      texture = this.getBlockTexture type
+    addSide = (side, id) =>
+      texture = this.getBlockTexture id
       maker.addSide side, offX + cx * CUBE_SIZE, offY + cy * CUBE_SIZE,
         offZ + cz * CUBE_SIZE, texture
 
     for cz in [0...CHUNK_SIZE]
       for cy in [0...CHUNK_SIZE]
         for cx in [0...CHUNK_SIZE]
-          block = chunk[cx + cy * CHUNK_SIZE + cz * CHUNK_SIZE * CHUNK_SIZE]
-          if block == 0
+          blockID = chunk[cx + cy * CHUNK_SIZE + cz * CHUNK_SIZE * CHUNK_SIZE]
+          if blockID == 0
             continue
-          if isAir(cx - 1, cy, cz) then addSide('left', block)
-          if isAir(cx + 1, cy, cz) then addSide('right', block)
-          if isAir(cx, cy - 1, cz) then addSide('bottom', block)
-          if isAir(cx, cy + 1, cz) then addSide('top', block)
-          if isAir(cx, cy, cz - 1) then addSide('far', block)
-          if isAir(cx, cy, cz + 1) then addSide('near', block)
+          if isAir(cx - 1, cy, cz) then addSide('left', blockID)
+          if isAir(cx + 1, cy, cz) then addSide('right', blockID)
+          if isAir(cx, cy - 1, cz) then addSide('bottom', blockID)
+          if isAir(cx, cy + 1, cz) then addSide('top', blockID)
+          if isAir(cx, cy, cz - 1) then addSide('far', blockID)
+          if isAir(cx, cy, cz + 1) then addSide('near', blockID)
 
     if maker.vertexCount > 0
       maker.makeVBO()
@@ -177,7 +174,7 @@ class World
 
   draw: ->
     @shader.use()
-    @atlas.bind()
+    @atlas.texture.bind()
     this.iterVisibleVBOs (vbo) ->
       vbo.draw()
 

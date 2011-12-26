@@ -1,7 +1,8 @@
 RESOURCES = [
   ['simpleShader', 'assets/simple.glsl'],
-  ['terrain', 'assets/terrain.png.texture',
-   filtering: 'LINEAR', clampToEdge: true, mipmaps: true]
+  ['blocks/grass', 'assets/textures/grass.png']
+  ['blocks/granite', 'assets/textures/granite.png']
+  ['blocks/stone', 'assets/textures/stone.png']
 ]
 
 

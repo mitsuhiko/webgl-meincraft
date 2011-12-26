@@ -23,8 +23,8 @@ class Texture
     webglmc.engine.gl.deleteTexture @id
 
   slice: (x, y, width, height) ->
-    return new TextureSlice this, @offsetX + x,
-      @offsetY + y, width, height
+    return new TextureSlice this, @offsetX + x, @offsetY + y,
+      width, height
 
 
 class TextureSlice extends Texture
@@ -62,7 +62,7 @@ textureFromImage = (image, options) ->
     gl.generateMipmap gl.TEXTURE_2D
   gl.bindTexture gl.TEXTURE_2D, null
 
-  console.debug "Created texture from '#{image.src}' [dim=#{image.width
+  console.debug "Created texture from '#{image.src || "<dynamic>"}' [dim=#{image.width
     }x#{image.height}, filtering=#{filtering}] ->", texture
 
   texture
