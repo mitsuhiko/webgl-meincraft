@@ -1,5 +1,3 @@
-DEBUG = true
-
 keyMapping =
   65:     'strafeLeft'    # A
   68:     'strafeRight'   # D
@@ -88,14 +86,15 @@ initEngineAndGame = (selector, debug) ->
   canvas = $(selector)[0]
 
   webglmc.debugPanel = new webglmc.DebugPanel()
-  webglmc.engine = new webglmc.Engine(canvas, DEBUG)
+  webglmc.engine = new webglmc.Engine(canvas, debug)
   webglmc.resmgr = webglmc.makeDefaultResourceManager()
   webglmc.game = new Game
   webglmc.game.run()
 
 
 $(document).ready ->
-  initEngineAndGame '#viewport', DEBUG
+  debug = 'debug=1' in window.location.search.substr(1).split('&')
+  initEngineAndGame '#viewport', debug
 
 
 public = self.webglmc ?= {}

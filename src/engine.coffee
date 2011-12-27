@@ -13,7 +13,12 @@ makeGLContext = (canvas, debug, options) ->
   catch e
     return null
   if debug
-    ctx = WebGLDebugUtils.makeDebugContext ctx
+    ctx = WebGLDebugUtils.makeDebugContext ctx, (err, funcName, args) ->
+      args = (x for x in args)
+      errorStr = WebGLDebugUtils.glEnumToString(err)
+      console.error "WebGL Error: func=#{funcName} args=", args, " error=", errorStr
+      console.trace?()
+      throw "Aborting rendering after critical WebGL error"
   ctx
 
 

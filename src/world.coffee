@@ -160,8 +160,8 @@ class World
     if !chunk
       return null
     vbo = @cachedVBOs[key]
-    if @dirtyVBOs[key] || !vbo?
-      if vbo?
+    if !vbo || @dirtyVBOs[key]
+      if vbo
         vbo.destroy()
       vbo = this.updateVBO x, y, z
       delete @dirtyVBOs[key]
@@ -178,6 +178,7 @@ class World
     [vec3.create(v1), vec3.add(v1, v2, vec3.create())]
 
   iterVisibleVBOs: (callback) ->
+    start = Date.now()
     frustum = webglmc.engine.getCurrentFrustum()
     cameraPos = webglmc.engine.getCameraPos()
     rv = []
@@ -197,7 +198,9 @@ class World
         rv.push vbo: vbo, distance: vec3.norm2(distance)
 
     rv.sort (a, b) -> a.distance - b.distance
-    @displays.chunkStats.setText "chunks=#{chunkCount} visibleVBOs=#{rv.length}"
+    dt = (Date.now() - start) / 1000
+    @displays.chunkStats.setText "chunks=#{chunkCount} visibleVBOs=#{
+        rv.length} chunkUpdate=#{dt}ms"
 
     for info in rv
       callback info.vbo
@@ -226,7 +229,7 @@ class World
   draw: ->
     @shader.use()
     @atlas.texture.bind()
-    this.iterVisibleVBOs (vbo) ->
+    this.iterVisibleVBOs (vbo) =>
       vbo.draw()
 
 

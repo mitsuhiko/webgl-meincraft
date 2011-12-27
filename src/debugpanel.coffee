@@ -26,8 +26,17 @@ class DebugPanel
     @element = $('<table id=debugpanel></table>').appendTo('body')
 
   addDisplay: (name) ->
-    @displays[name] = new Display this, name
+    @displays[name] ?= new Display this, name
+
+
+bench = (benchName, callback) ->
+  name = "bench [#{benchName}]"
+  display = webglmc.debugPanel.addDisplay name
+  now = Date.now()
+  callback()
+  display.setText "#{(Date.now() - now) / 1000}ms"
 
 
 public = self.webglmc ?= {}
 public.DebugPanel = DebugPanel
+public.bench = bench
