@@ -1,8 +1,6 @@
-ChunkArray = Uint8Array
-
 CUBE_SIZE = 1.0
-CHUNK_SIZE = 64
-VIEW_DISTANCE = 1
+CHUNK_SIZE = 32
+VIEW_DISTANCE = 2
 FRUSTUM_CULLING = false     # disabled since it still does not work properly
 BLOCK_TYPES =
   air:          0
@@ -11,6 +9,8 @@ BLOCK_TYPES =
   granite:      3
   rock:         4
 
+
+ChunkArray = Uint8Array
 
 parseKey = (key) ->
   [x, y, z] = key.split('|')
@@ -50,6 +50,9 @@ class World
     @cachedVBOs = {}
     @dirtyVBOs = {}
     @shader = webglmc.resmgr.resources['shaders/simple']
+
+    @displays =
+      chunkStats: webglmc.debugPanel.addDisplay 'Chunk stats'
 
     @atlas = makeBlockAtlas()
 
@@ -178,8 +181,10 @@ class World
     frustum = webglmc.engine.getCurrentFrustum()
     cameraPos = webglmc.engine.getCameraPos()
     rv = []
+    chunkCount = 0
 
     for key, chunk of @chunks
+      chunkCount++
       [x, y, z] = parseKey key
       vbo = this.getChunkVBO x, y, z
       if !vbo
@@ -192,6 +197,8 @@ class World
         rv.push vbo: vbo, distance: vec3.norm2(distance)
 
     rv.sort (a, b) -> a.distance - b.distance
+    @displays.chunkStats.setText "chunks=#{chunkCount} visibleVBOs=#{rv.length}"
+
     for info in rv
       callback info.vbo
 

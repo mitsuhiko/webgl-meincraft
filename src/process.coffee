@@ -58,6 +58,7 @@ class Process
 class ProcessManager
   constructor: (workers, options) ->
     @workers = []
+    @display = null
     @onNotification = options.onNotification
     @load = {}
     for n in [0...workers]
@@ -70,6 +71,7 @@ class ProcessManager
       process:        options.process
       args:           options.args
       onBeforeCall:   (name, args) =>
+        this.updateDisplay()
         webglmc.engine.pushThrobber()
         options.onBeforeCall?(name, args)
         @load[num] += 1
@@ -78,13 +80,29 @@ class ProcessManager
 
   getWorker: ->
     workers = ([load, num] for num, load of @load)
-    workers.sort()
+    workers.sort (a, b) ->
+      a[0] - b[0]
     @workers[workers[0][1]]
 
   handleWorkerResult: (num, data) ->
     webglmc.engine.popThrobber()
     @load[num] -= 1
+    this.updateDisplay()
     this.onNotification data
+
+  updateDisplay: ->
+    if !@display
+      return
+
+    pieces = []
+    for num, load of @load
+      pieces.push "w(#{num}) = #{load}"
+
+    @display.setText pieces.join(', ')
+
+  addStatusDisplay: (name) ->
+    @display = webglmc.debugPanel.addDisplay name
+    this.updateDisplay()
 
 
 public = self.webglmc ?= {}

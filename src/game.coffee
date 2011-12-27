@@ -1,5 +1,3 @@
-WIDTH = 800
-HEIGHT = 480
 DEBUG = true
 
 keyMapping =
@@ -24,8 +22,8 @@ class Game
 
     # Initialize a small new world
     @cam = new webglmc.Camera
-    @cam.position = vec3.create([0.0, 50.0, 20.0])
-    @cam.lookAt vec3.create([0.0, 40.0, 0.0])
+    @cam.position = vec3.create([-20.0, 60.0, -20.0])
+    @cam.lookAt vec3.create([-0.5, 20.0, 0.5])
 
     @world = new webglmc.World
 
@@ -86,11 +84,8 @@ class Game
     @world.draw()
 
 
-initEngineAndGame = (width, height, debug) ->
-  canvas = $('<canvas></canvas>')
-    .attr('width', WIDTH)
-    .attr('height', HEIGHT)
-    .appendTo('body')[0]
+initEngineAndGame = (selector, debug) ->
+  canvas = $(selector)[0]
 
   webglmc.engine = new webglmc.Engine(canvas, DEBUG)
   webglmc.resmgr = webglmc.makeDefaultResourceManager()
@@ -99,7 +94,7 @@ initEngineAndGame = (width, height, debug) ->
 
 
 $(document).ready ->
-  initEngineAndGame(WIDTH, HEIGHT, DEBUG)
+  initEngineAndGame '#viewport', DEBUG
 
 
 public = self.webglmc ?= {}

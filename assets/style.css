@@ -1,5 +1,16 @@
-body { background: #222; font-family: 'Helvetica Neue', 'Helvetica', sans-serif; margin: 40px 0; }
-h1 { text-align: center; margin: 0; color: #ddd; font-weight: normal; font-size: 30px; }
-p { font-weight: normal; font-size: 14px; text-align: center; margin: 0; color: white; }
-canvas { display: block; margin: 40px auto; border: 1px solid #111; }
-img#throbber { position: fixed; top: 20px; right: 20px; }
+body            { background: #222; font-family: 'Helvetica Neue', 'Helvetica',
+                  sans-serif; margin: 40px 0; }
+h1              { text-align: center; margin: 0; color: #ddd; font-weight: normal;
+                  font-size: 30px; }
+p               { font-weight: normal; font-size: 14px; text-align: center;
+                  margin: 0; color: white; }
+#viewport       { display: block; margin: 20px auto; border: 1px solid #111; }
+
+img#throbber    { position: fixed; top: 20px; right: 20px; }
+
+#debugpanel     { border: 1px solid #ccc; color: black;
+                  background: #eee; margin: 20px auto; width: 960px;
+                  border-collapse: collapse; }
+#debugpanel tr  { height: 30px; }
+#debugpanel th  { text-align: left; width: 0px; padding: 0 10px; white-space: pre; }
+#debugpanel td  { text-align: left; white-space: pre; }

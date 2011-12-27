@@ -49,9 +49,10 @@ class WorldGeneratorProcess extends webglmc.Process
     for cz in [0...chunkSize]
       for cy in [0...chunkSize]
         for cx in [0...chunkSize]
-          isSolid = this.isSolid offX + cx, offY + cy, offZ + cz
           block = blockTypes.air
-          if isSolid
+          if offY + cy == 0
+            block = blockTypes.stone
+          else if this.isSolid offX + cx, offY + cy, offZ + cz
             if !this.isSolid offX + cx, offY + cy + 1, offZ + cz
               block = blockTypes.grass
             else
@@ -71,6 +72,8 @@ class WorldGenerator
       args:           [world.seed]
       onNotification: (data) =>
         this.processGeneratedChunk data.x, data.y, data.z, data.chunk
+
+    @manager.addStatusDisplay('Worldgen worker load')
 
   generateChunk: (x, y, z) ->
     @manager.getWorker().generateChunk
