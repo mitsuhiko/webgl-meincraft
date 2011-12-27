@@ -29,6 +29,16 @@ class DebugPanel
     @displays[name] ?= new Display this, name
 
 
+parameters = null
+getRuntimeParameter = (key, def=null) ->
+  if !parameters?
+    parameters = {}
+    for item in window.location.search.substr(1).split('&')
+      [k, v] = item.split('=', 2)
+      parameters[k] = v
+  parameters[key] ? def
+
+
 bench = (benchName, callback) ->
   name = "bench [#{benchName}]"
   display = webglmc.debugPanel.addDisplay name
@@ -39,4 +49,5 @@ bench = (benchName, callback) ->
 
 public = self.webglmc ?= {}
 public.DebugPanel = DebugPanel
+public.getRuntimeParameter = getRuntimeParameter
 public.bench = bench

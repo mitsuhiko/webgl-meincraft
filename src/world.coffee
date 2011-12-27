@@ -1,7 +1,7 @@
 CUBE_SIZE = 1.0
 CHUNK_SIZE = 32
 VIEW_DISTANCE = 2
-FRUSTUM_CULLING = false     # disabled since it still does not work properly
+FRUSTUM_CULLING = true     # disabled since it still does not work properly
 BLOCK_TYPES =
   air:          0
   grass:        1

@@ -93,7 +93,7 @@ initEngineAndGame = (selector, debug) ->
 
 
 $(document).ready ->
-  debug = 'debug=1' in window.location.search.substr(1).split('&')
+  debug = webglmc.getRuntimeParameter('debug') == '1'
   initEngineAndGame '#viewport', debug
 
 

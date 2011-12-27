@@ -22,7 +22,7 @@ startProcess = (options) ->
     {data} = event
     if data.type == 'notify'
       if callback?
-        callback data.value
+        callback data.value, data.done
     else if data.type == 'console'
       console[data.level]("%c[#{options.process}]: ",
         'background: #D4F2F3; color: #133C3D', data.args...)
@@ -49,8 +49,8 @@ class ProcessProxy
 
 
 class Process
-  notifyParent: (value) ->
-    postMessage type: 'notify', value: value
+  notifyParent: (value, done = true) ->
+    postMessage type: 'notify', value: value, done: done
 
   run: ->
 
@@ -75,8 +75,8 @@ class ProcessManager
         webglmc.engine.pushThrobber()
         options.onBeforeCall?(name, args)
         @load[num] += 1
-      onNotification: (data) =>
-        this.handleWorkerResult num, data
+      onNotification: (data, done) =>
+        this.handleWorkerResult num, data, done
 
   getWorker: ->
     workers = ([load, num] for num, load of @load)
@@ -84,9 +84,10 @@ class ProcessManager
       a[0] - b[0]
     @workers[workers[0][1]]
 
-  handleWorkerResult: (num, data) ->
+  handleWorkerResult: (num, data, done) ->
     webglmc.engine.popThrobber()
-    @load[num] -= 1
+    if done
+      @load[num] -= 1
     this.updateDisplay()
     this.onNotification data
 

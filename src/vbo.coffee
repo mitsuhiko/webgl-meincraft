@@ -47,8 +47,7 @@ class VertexBufferObject
   constructor: (drawMode, count, options = {}) ->
     @drawMode = webglmc.engine.gl[drawMode]
     @count = count
-    @interleaved = options.interleaved ?
-      'interleaved=1' in window.location.search.substr(1).split('&')
+    @interleaved = options.interleaved ? true
     @buffers = {}
     @uploaded = false
 
@@ -75,11 +74,11 @@ class VertexBufferObject
     vertices = new Float32Array count * stride
     for i in [0...count]
       dstOffset = stride * i
-      for [name, strideOffset, buffer] in offsets
+      for [name, bufferOffset, buffer] in offsets
         srcOffset = i * buffer.size
         for j in [0...buffer.size]
-          vertices[dstOffset + strideOffset + j] = buffer.vertices[srcOffset + j]
-    
+          vertices[dstOffset + bufferOffset + j] = buffer.vertices[srcOffset + j]
+
     id = gl.createBuffer()
     gl.bindBuffer gl.ARRAY_BUFFER, id
     gl.bufferData gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW
@@ -92,7 +91,7 @@ class VertexBufferObject
   uploadSeparateBuffers: ->
     {gl} = webglmc.engine
     for name, buffer of @buffers
-      if buffer.isInterleavedBuffer
+      if buffer.isInterleavedBuffer || buffer.isOnDevice
         continue
       bufferType = buffer.type
       id = gl.createBuffer()
@@ -115,6 +114,8 @@ class VertexBufferObject
     @count = 0
 
   draw: ->
+    if !@count then return
+
     {engine} = webglmc
     {gl} = engine
     drawElements = @buffers.__index__?
