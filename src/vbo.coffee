@@ -47,7 +47,8 @@ class VertexBufferObject
   constructor: (drawMode, count, options = {}) ->
     @drawMode = webglmc.engine.gl[drawMode]
     @count = count
-    @interleaved = options.interleaved ? false
+    @interleaved = options.interleaved ?
+      'interleaved=1' in window.location.search.substr(1).split('&')
     @buffers = {}
     @uploaded = false
 
