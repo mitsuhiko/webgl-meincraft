@@ -26,6 +26,8 @@ class Engine
       .hide()
     @throbberLevel = 0
 
+    @frameTimeDisplay = webglmc.debugPanel.addDisplay 'Frame time'
+
     # To force antialiasing pass antialias: true as options
     @gl = makeGLContext canvas, @debug
     @aspect = @canvas.width / @canvas.height
@@ -100,8 +102,10 @@ class Engine
 
   mainloop: (iterate) ->
     lastTimestamp = Date.now()
-    step = (timestamp) ->
-      iterate (timestamp - lastTimestamp) / 1000
+    step = (timestamp) =>
+      dt = (timestamp - lastTimestamp) / 1000
+      @frameTimeDisplay.setText dt + 'ms'
+      iterate dt
       lastTimestamp = timestamp
       requestAnimationFrame step
     requestAnimationFrame step

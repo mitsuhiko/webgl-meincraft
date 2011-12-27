@@ -87,6 +87,7 @@ class Game
 initEngineAndGame = (selector, debug) ->
   canvas = $(selector)[0]
 
+  webglmc.debugPanel = new webglmc.DebugPanel()
   webglmc.engine = new webglmc.Engine(canvas, DEBUG)
   webglmc.resmgr = webglmc.makeDefaultResourceManager()
   webglmc.game = new Game
@@ -99,5 +100,6 @@ $(document).ready ->
 
 public = self.webglmc ?= {}
 public.game = null
+public.debugPanel = null
 public.resmgr = null
 public.engine = null

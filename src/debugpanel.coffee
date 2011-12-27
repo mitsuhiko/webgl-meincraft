@@ -23,12 +23,11 @@ class Display
 class DebugPanel
   constructor: ->
     @displays = {}
-    $(document).ready =>
-      @element = $('<table id=debugpanel></table>').appendTo('body')
+    @element = $('<table id=debugpanel></table>').appendTo('body')
 
   addDisplay: (name) ->
     @displays[name] = new Display this, name
 
 
 public = self.webglmc ?= {}
-public.debugPanel = new DebugPanel()
+public.DebugPanel = DebugPanel
