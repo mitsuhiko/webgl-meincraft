@@ -5,7 +5,7 @@ class Camera
     @up = vec3.create([0.0, 1.0, 0.0])
     @fov = 45.0
     @near = 0.1
-    @far = 200.0
+    @far = 400.0
 
   lookAt: (vec) ->
     vec3.subtract vec, @position, @forward

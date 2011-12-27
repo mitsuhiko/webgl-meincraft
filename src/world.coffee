@@ -1,8 +1,9 @@
 ChunkArray = Uint8Array
 
 CUBE_SIZE = 1.0
-CHUNK_SIZE = 32
-VIEW_DISTANCE = 2
+CHUNK_SIZE = 64
+VIEW_DISTANCE = 1
+FRUSTUM_CULLING = false     # disabled since it still does not work properly
 BLOCK_TYPES =
   air:          0
   grass:        1
@@ -143,8 +144,7 @@ class World
           if isAir(cx, cy, cz - 1) then addSide('far', blockID)
           if isAir(cx, cy, cz + 1) then addSide('near', blockID)
 
-    if maker.vertexCount > 0
-      maker.makeVBO()
+    maker.makeVBO()
 
   markVBODirty: (x, y, z) ->
     key = "#{x}|#{y}|#{z}"
@@ -186,9 +186,10 @@ class World
         continue
 
       [vec1, vec2] = this.makeChunkAABB x, y, z
-      if frustum.testAABB(vec1, vec2) >= 0
-        distance = vec3.subtract vec1, cameraPos
-        rv.push vbo: vbo, distance: vec3.length(distance)
+      distance = vec3.subtract vec1, cameraPos
+
+      if !FRUSTUM_CULLING || frustum.testAABB(vec1, vec2) >= 0
+        rv.push vbo: vbo, distance: vec3.norm2(distance)
 
     rv.sort (a, b) -> a.distance - b.distance
     for info in rv

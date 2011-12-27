@@ -32,32 +32,64 @@ startProcess = (options) ->
 
   console.log "Starting process #{options.process} as worker args=", args
   worker.postMessage cmd: '__init__', worker: options.process, args: args
-  return new ProcessProxy worker, options.process
+  return new ProcessProxy worker, options.process, options.onBeforeCall
 
 
 class ProcessProxy
-
-  constructor: (worker, processClass) ->
+  constructor: (worker, processClass, onBeforeCall) ->
     @_worker = worker
     for key, callable of findClass(processClass).prototype
       if key in ['constructor', 'run', 'notifyParent']
         continue
       do (key) =>
         this[key] = (args...) ->
+          onBeforeCall?(key, args)
           this._worker.postMessage cmd: key, args: args
           undefined
 
 
 class Process
-
   notifyParent: (value) ->
     postMessage type: 'notify', value: value
 
   run: ->
 
 
+class ProcessManager
+  constructor: (workers, options) ->
+    @workers = []
+    @onNotification = options.onNotification
+    @load = {}
+    for n in [0...workers]
+      this.addWorker options
+
+  addWorker: (options) ->
+    num = @workers.length
+    @load[num] = 0
+    @workers.push startProcess
+      process:        options.process
+      args:           options.args
+      onBeforeCall:   (name, args) =>
+        webglmc.engine.pushThrobber()
+        options.onBeforeCall?(name, args)
+        @load[num] += 1
+      onNotification: (data) =>
+        this.handleWorkerResult num, data
+
+  getWorker: ->
+    workers = ([load, num] for num, load of @load)
+    workers.sort()
+    @workers[workers[0][1]]
+
+  handleWorkerResult: (num, data) ->
+    webglmc.engine.popThrobber()
+    @load[num] -= 1
+    this.onNotification data
+
+
 public = self.webglmc ?= {}
 public.Process = Process
+public.ProcessManager = ProcessManager
 public.startProcess = startProcess
 
 
