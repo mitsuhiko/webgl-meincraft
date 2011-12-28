@@ -119,6 +119,7 @@ class VertexBufferObject
     {engine} = webglmc
     {gl} = engine
     drawElements = @buffers.__index__?
+    locsToDisable = []
 
     engine.flushUniforms()
 
@@ -136,12 +137,16 @@ class VertexBufferObject
         gl.vertexAttribPointer loc, buffer.size, buffer.elementType,
           false, buffer.stride, buffer.offset
         gl.enableVertexAttribArray loc
+        locsToDisable.push loc
 
     if drawElements
       gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, @buffers.__index__.id
       gl.drawElements @drawMode, @count, gl.UNSIGNED_SHORT, 0
     else
       gl.drawArrays @drawMode, 0, @count
+
+    for loc in locsToDisable
+      gl.disableVertexAttribArray loc
 
 
 public = self.webglmc ?= {}

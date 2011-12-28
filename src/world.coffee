@@ -1,7 +1,6 @@
 CUBE_SIZE = 1.0
 CHUNK_SIZE = 32
 VIEW_DISTANCE = 2
-FRUSTUM_CULLING = true     # disabled since it still does not work properly
 BLOCK_TYPES =
   air:          0
   grass:        1
@@ -169,20 +168,16 @@ class World
         @cachedVBOs[key] = vbo
     vbo
 
-  makeChunkAABB: (x, y, z) ->
-    size = CUBE_SIZE * @chunkSize
-    v1 = [size * x - CUBE_SIZE / 2,
-          size * y - CUBE_SIZE / 2,
-          size * z - CUBE_SIZE / 2]
-    v2 = [size, size, size]
-    [vec3.create(v1), vec3.add(v1, v2, vec3.create())]
-
   iterVisibleVBOs: (callback) ->
     start = Date.now()
     frustum = webglmc.engine.getCurrentFrustum()
     cameraPos = webglmc.engine.getCameraPos()
-    rv = []
     chunkCount = 0
+    rv = []
+
+    vec1 = vec3.create()
+    vec2 = vec3.create()
+    chunkSize = CUBE_SIZE * @chunkSize
 
     for key, chunk of @chunks
       chunkCount++
@@ -191,10 +186,15 @@ class World
       if !vbo
         continue
 
-      [vec1, vec2] = this.makeChunkAABB x, y, z
+      # For some reason the frustum culling is broken so I just cull against
+      # larger objects.  Seems to do the trick.
+      vec1[0] = chunkSize * (x - 1)
+      vec1[1] = chunkSize * (y - 1)
+      vec1[2] = chunkSize * (z - 1)
+      vec3.add vec1, [chunkSize * 3, chunkSize * 3, chunkSize * 3], vec2
       distance = vec3.subtract vec1, cameraPos
 
-      if !FRUSTUM_CULLING || frustum.testAABB(vec1, vec2) >= 0
+      if frustum.testAABB(vec1, vec2) >= 0
         rv.push vbo: vbo, distance: vec3.norm2(distance)
 
     rv.sort (a, b) -> a.distance - b.distance

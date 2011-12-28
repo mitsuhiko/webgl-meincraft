@@ -1,6 +1,3 @@
-NUMBER_OF_WORKERS = 4
-
-
 mod = (x, y) ->
   (x % y + y) % y
 
@@ -52,11 +49,11 @@ class WorldGeneratorProcess extends webglmc.Process
           block = blockTypes.air
           if offY + cy == 0
             block = blockTypes.stone
-          else if this.isSolid offX + cx, offY + cy, offZ + cz
-            if !this.isSolid offX + cx, offY + cy + 1, offZ + cz
-              block = blockTypes.grass
-            else
-              block = blockTypes.rock
+          #else if this.isSolid offX + cx, offY + cy, offZ + cz
+          #  if !this.isSolid offX + cx, offY + cy + 1, offZ + cz
+          #    block = blockTypes.grass
+          #  else
+          #    block = blockTypes.rock
           chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] = block
 
     this.notifyParent x: x, y: y, z: z, chunk: chunk
@@ -66,8 +63,10 @@ class WorldGenerator
   constructor: (world) ->
     @world = world
 
+    numberOfWorkers = parseInt webglmc.getRuntimeParameter 'workers', 4
+
     # Spawn a few workers for the actual world generation.
-    @manager = new webglmc.ProcessManager NUMBER_OF_WORKERS,
+    @manager = new webglmc.ProcessManager numberOfWorkers,
       process:        'webglmc.WorldGeneratorProcess'
       args:           [world.seed]
       onNotification: (data) =>
