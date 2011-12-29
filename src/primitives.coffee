@@ -99,6 +99,9 @@ class CubeMaker
     halfsize = size / 2
     start = @vertexCount
 
+    if !texture && @texcoords.length > 0
+      throw "Attempted to add null texture to cube with texcoords"
+
     [nx, ny, nz] = CUBE_VERTICES[side].normals
     for [cx, cy, cz] in CUBE_VERTICES[side].positions
       @positions.push x + (cx * halfsize)

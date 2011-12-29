@@ -6,7 +6,7 @@ class WorldGeneratorProcess extends webglmc.Process
   constructor: (seed) ->
     @perlin = new webglmc.PerlinGenerator seed
 
-  isSolid: (x, y, z) ->
+  isFlyingRock: (x, y, z) ->
     nx = x * 0.01
     ny = y * 0.01
     nz = z * 0.01
@@ -35,8 +35,19 @@ class WorldGeneratorProcess extends webglmc.Process
     density = noise * centerFalloff * plateauFalloff
     density > 0.1
 
-  generateChunk: (def) ->
+  getBlock: (x, y, z) ->
     blockTypes = webglmc.BLOCK_TYPES
+    block = blockTypes.air
+    if y == 0
+      block = blockTypes.water
+    else if this.isFlyingRock x, y, z
+      if !this.isFlyingRock x, y, z
+        block = blockTypes.grass
+      else
+        block = blockTypes.rock
+    return block
+
+  generateChunk: (def) ->
     {chunkSize, x, y, z} = def
     chunk = new Array(Math.pow(chunkSize, 3))
     offX = x * chunkSize
@@ -46,15 +57,8 @@ class WorldGeneratorProcess extends webglmc.Process
     for cz in [0...chunkSize]
       for cy in [0...chunkSize]
         for cx in [0...chunkSize]
-          block = blockTypes.air
-          if offY + cy == 0
-            block = blockTypes.stone
-          #else if this.isSolid offX + cx, offY + cy, offZ + cz
-          #  if !this.isSolid offX + cx, offY + cy + 1, offZ + cz
-          #    block = blockTypes.grass
-          #  else
-          #    block = blockTypes.rock
-          chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] = block
+          blockID = this.getBlock offX + cx, offY + cy, offZ + cz
+          chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] = blockID
 
     this.notifyParent x: x, y: y, z: z, chunk: chunk
 

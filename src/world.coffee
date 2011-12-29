@@ -7,6 +7,7 @@ BLOCK_TYPES =
   stone:        2
   granite:      3
   rock:         4
+  water:        5
 
 
 ChunkArray = Uint8Array
