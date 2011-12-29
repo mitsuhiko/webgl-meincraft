@@ -12,5 +12,6 @@ img#throbber    { position: fixed; top: 20px; right: 20px; }
                   background: #eee; margin: 20px auto; width: 960px;
                   border-collapse: collapse; }
 #debugpanel tr  { height: 30px; }
-#debugpanel th  { text-align: left; width: 0px; padding: 0 10px; white-space: pre; }
+#debugpanel th  { text-align: left; width: 0px; padding: 0 10px; white-space: pre;
+                  width: 200px; }
 #debugpanel td  { text-align: left; white-space: pre; }

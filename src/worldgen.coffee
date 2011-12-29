@@ -5,6 +5,7 @@ mod = (x, y) ->
 class WorldGeneratorProcess extends webglmc.Process
   constructor: (seed) ->
     @perlin = new webglmc.PerlinGenerator seed
+    @waterLevel = 16
 
   isFlyingRock: (x, y, z) ->
     nx = x * 0.01
@@ -31,21 +32,51 @@ class WorldGeneratorProcess extends webglmc.Process
       Math.pow((mz - 0.5) * 1.5, 2.0)
     )
 
-    noise = @perlin.simpleNoise3D nx, ny * 0.5, nz
+    noise = @perlin.noise3D nx, ny * 0.5, nz, 4
     density = noise * centerFalloff * plateauFalloff
     density > 0.1
 
+  isGroundLevel: (x, y, z) ->
+    if y > 35
+      return false
+
+    nx = x * 0.01
+    nz = z * 0.01
+    noise = @perlin.noise2D(nx, nz, 3) * 0.5 + 0.5
+
+    y < noise * 30
+
+  isWater: (x, y, z) ->
+    y <= @waterLevel
+
   getBlock: (x, y, z) ->
     blockTypes = webglmc.BLOCK_TYPES
-    block = blockTypes.air
-    if y == 0
-      block = blockTypes.water
-    else if this.isFlyingRock x, y, z
-      if !this.isFlyingRock x, y, z
-        block = blockTypes.grass
-      else
-        block = blockTypes.rock
-    return block
+
+    # Deep below
+    if y < -20
+      return blockTypes.rock
+
+    # Ground level
+    if this.isGroundLevel x, y, z
+      if @waterLevel - 1 <= y <= @waterLevel + 1
+        return blockTypes.sand
+      else if y < @waterLevel
+        return blockTypes.stone
+      return blockTypes.grass
+
+    # Flying rocks
+    if this.isFlyingRock x, y, z
+      if y <= @waterLevel + 1
+        return blockTypes.stone
+      if !this.isFlyingRock x, y + 1, z
+        return blockTypes.grass
+      return blockTypes.rock
+
+    # Water level
+    if this.isWater x, y, z
+      return blockTypes.water
+
+    blockTypes.air
 
   generateChunk: (def) ->
     {chunkSize, x, y, z} = def

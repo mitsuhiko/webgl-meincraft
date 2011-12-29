@@ -1,6 +1,8 @@
 CUBE_SIZE = 1.0
 CHUNK_SIZE = 32
-VIEW_DISTANCE = 2
+VIEW_DISTANCE_X = 2
+VIEW_DISTANCE_Y = 2
+VIEW_DISTANCE_Z = 2
 BLOCK_TYPES =
   air:          0
   grass:        1
@@ -8,6 +10,7 @@ BLOCK_TYPES =
   granite:      3
   rock:         4
   water:        5
+  sand:         6
 
 
 ChunkArray = Uint8Array
@@ -50,6 +53,7 @@ class World
     @cachedVBOs = {}
     @dirtyVBOs = {}
     @shader = webglmc.resmgr.resources['shaders/simple']
+    @frustumCulling = webglmc.getRuntimeParameter('frustumCulling') == '1'
 
     @displays =
       chunkStats: webglmc.debugPanel.addDisplay 'Chunk stats'
@@ -195,7 +199,7 @@ class World
       vec3.add vec1, [chunkSize * 3, chunkSize * 3, chunkSize * 3], vec2
       distance = vec3.subtract vec1, cameraPos
 
-      if frustum.testAABB(vec1, vec2) >= 0
+      if !@frustumCulling || frustum.testAABB(vec1, vec2) >= 0
         rv.push vbo: vbo, distance: vec3.norm2(distance)
 
     rv.sort (a, b) -> a.distance - b.distance
@@ -214,9 +218,9 @@ class World
 
   requestMissingChunks: ->
     [x, y, z] = this.chunkAtCameraPosition()
-    for cx in [x - VIEW_DISTANCE..x + VIEW_DISTANCE]
-      for cy in [y - VIEW_DISTANCE..y + VIEW_DISTANCE]
-        for cz in [z - VIEW_DISTANCE..z + VIEW_DISTANCE]
+    for cx in [x - VIEW_DISTANCE_X..x + VIEW_DISTANCE_X]
+      for cy in [y - VIEW_DISTANCE_Y..y + VIEW_DISTANCE_Y]
+        for cz in [z - VIEW_DISTANCE_Z..z + VIEW_DISTANCE_Z]
           chunk = this.getChunk cx, cy, cz
           if !chunk
             this.requestChunk cx, cy, cz

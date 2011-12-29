@@ -5,6 +5,7 @@ RESOURCES = [
   ['blocks/stone', 'assets/textures/stone.png']
   ['blocks/rock', 'assets/textures/rock.png']
   ['blocks/water', 'assets/textures/water.png']
+  ['blocks/sand', 'assets/textures/sand.png']
 ]
 
 
