@@ -36,6 +36,9 @@ class WorldGeneratorProcess extends webglmc.Process
     density = noise * centerFalloff * plateauFalloff
     density > 0.1
 
+  isCave: (x, y, z) ->
+    false
+
   isGroundLevel: (x, y, z) ->
     if y > 35
       return false
@@ -48,6 +51,14 @@ class WorldGeneratorProcess extends webglmc.Process
 
   isWater: (x, y, z) ->
     y <= @waterLevel
+
+  getGrassVariation: (x, y, z) ->
+    nx = x * 1.2
+    ny = y * 1.4
+    nz = z * 1.1
+    noise = @perlin.simpleNoise3D(nx, ny, nz) * 0.5 + 0.5
+    variation = Math.floor(noise * 4) + 1
+    webglmc.BLOCK_TYPES["grass0#{variation}"]
 
   getBlock: (x, y, z) ->
     blockTypes = webglmc.BLOCK_TYPES
@@ -62,14 +73,16 @@ class WorldGeneratorProcess extends webglmc.Process
         return blockTypes.sand
       else if y < @waterLevel
         return blockTypes.stone
-      return blockTypes.grass
+      return this.getGrassVariation x, y, z
 
     # Flying rocks
     if this.isFlyingRock x, y, z
+      if this.isCave x, y, z
+        return blockTypes.air
       if y <= @waterLevel + 1
         return blockTypes.stone
       if !this.isFlyingRock x, y + 1, z
-        return blockTypes.grass
+        return this.getGrassVariation x, y, z
       return blockTypes.rock
 
     # Water level

@@ -1,6 +1,9 @@
 RESOURCES = [
   ['shaders/simple', 'assets/shaders/simple.glsl'],
-  ['blocks/grass', 'assets/textures/grass.png']
+  ['blocks/grass01', 'assets/textures/grass01.png']
+  ['blocks/grass02', 'assets/textures/grass02.png']
+  ['blocks/grass03', 'assets/textures/grass03.png']
+  ['blocks/grass04', 'assets/textures/grass04.png']
   ['blocks/granite', 'assets/textures/granite.png']
   ['blocks/stone', 'assets/textures/stone.png']
   ['blocks/rock', 'assets/textures/rock.png']

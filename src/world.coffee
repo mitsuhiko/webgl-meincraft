@@ -5,12 +5,15 @@ VIEW_DISTANCE_Y = 2
 VIEW_DISTANCE_Z = 2
 BLOCK_TYPES =
   air:          0
-  grass:        1
-  stone:        2
-  granite:      3
-  rock:         4
-  water:        5
-  sand:         6
+  grass01:      1
+  grass02:      2
+  grass03:      3
+  grass04:      4
+  stone:        10
+  granite:      11
+  rock:         12
+  water:        20
+  sand:         21
 
 
 ChunkArray = Uint8Array
