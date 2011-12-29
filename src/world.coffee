@@ -56,6 +56,7 @@ class World
     @cachedVBOs = {}
     @dirtyVBOs = {}
     @shader = webglmc.resmgr.resources['shaders/simple']
+    @sunDirection = vec3.create([0.7, 0.8, 1.0])
     @frustumCulling = webglmc.getRuntimeParameter('frustumCulling') == '1'
 
     @displays =
@@ -235,7 +236,12 @@ class World
     @generator.generateChunk x, y, z
 
   draw: ->
+    {gl} = webglmc.engine
+
     @shader.use()
+    loc = @shader.getUniformLocation "uSunDirection"
+    gl.uniform3fv loc, @sunDirection
+
     @atlas.texture.bind()
     this.iterVisibleVBOs (vbo) =>
       vbo.draw()

@@ -11,6 +11,7 @@ makeGLContext = (canvas, debug, options) ->
     ctx = canvas.getContext('webgl', options) ||
       canvas.getContext('experimental-webgl', options)
   catch e
+    alert "Error: This browser does not support WebGL"
     return null
   if debug
     ctx = WebGLDebugUtils.makeDebugContext ctx, (err, funcName, args) ->

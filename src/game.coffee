@@ -74,7 +74,7 @@ class Game
     @world.requestMissingChunks()
 
   render: ->
-    {gl, modelView} = webglmc.engine
+    {gl} = webglmc.engine
 
     gl.clearColor 0.0, 0.0, 0.0, 1.0
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT

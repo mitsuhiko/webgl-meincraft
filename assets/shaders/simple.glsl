@@ -1,4 +1,5 @@
 #include "common.glsl"
+uniform vec3 uSunDirection;
 varying vec3 vNormal;
 varying vec2 vTextureCoord;
 varying vec3 vHalfVec;
@@ -9,7 +10,7 @@ void main(void)
 {
     gl_Position = uModelViewProjectionMatrix * vec4(aVertexPosition, 1.0);
     vTextureCoord = aTextureCoord;
-    vSunDirection = normalize(vec3(0.7, 0.8, 1.0));
+    vSunDirection = uSunDirection;
     vNormal = uNormalMatrix * aVertexNormal;
     vHalfVec = normalize(aVertexPosition + vSunDirection);
 }
