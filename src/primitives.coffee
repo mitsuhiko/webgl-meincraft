@@ -87,8 +87,9 @@ CUBE_VERTICES =
 
 
 class CubeMaker
-  constructor: (defaultSize = 1) ->
+  constructor: (defaultSize = 1, useIndexes = null) ->
     @defaultSize = defaultSize
+    @useIndexes = useIndexes ? webglmc.getRuntimeParameter('useIndexes') == '1'
     @vertexCount = 0
     @positions = []
     @normals = []
@@ -97,39 +98,46 @@ class CubeMaker
 
   addSide: (side, x, y, z, texture = null, size = @defaultSize) ->
     halfsize = size / 2
-    start = @vertexCount
+    iterable = if !@useIndexes then CUBE_INDEXES else [0..3]
+    def = CUBE_VERTICES[side]
 
-    if !texture && @texcoords.length > 0
-      throw "Attempted to add null texture to cube with texcoords"
-
-    [nx, ny, nz] = CUBE_VERTICES[side].normals
-    for [cx, cy, cz] in CUBE_VERTICES[side].positions
-      @positions.push x + (cx * halfsize)
-      @positions.push y + (cy * halfsize)
-      @positions.push z + (cz * halfsize)
-      @normals.push nx, ny, nz
-
-    if texture?
+    if !texture
+      if @texcoords.length > 0
+        throw "Attempted to add null texture to cube with texcoords"
+    else
       facX = texture.width / texture.storedWidth
       facY = texture.height / texture.storedHeight
       offX = texture.offsetX / texture.storedWidth
       offY = texture.offsetY / texture.storedHeight
 
-      for [tx, ty] in CUBE_VERTICES[side].texcoords
+    [nx, ny, nz] = def.normals
+    for i in iterable
+      [cx, cy, cz] = def.positions[i]
+      @positions.push x + (cx * halfsize)
+      @positions.push y + (cy * halfsize)
+      @positions.push z + (cz * halfsize)
+      @normals.push nx, ny, nz
+
+      if texture
+        [tx, ty] = def.texcoords[i]
         @texcoords.push tx * facX + offX
         @texcoords.push ty * facY + offY
 
-    for index in CUBE_INDEXES
-      @indexes.push start + index
-
-    @vertexCount += 4
+    if @useIndexes
+      for index in CUBE_INDEXES
+        @indexes.push @vertexCount + index
+      @vertexCount += 4
+    else
+      @vertexCount += 6
 
   makeVBO: (upload = true) ->
-    vbo = new webglmc.VertexBufferObject 'TRIANGLES', @indexes.length
+    count = if @useIndexes then @indexes.length else @vertexCount
+    vbo = new webglmc.VertexBufferObject 'TRIANGLES', count
     vbo.addBuffer 'aVertexPosition', 3, @positions
     vbo.addBuffer 'aVertexNormal', 3, @normals
     vbo.addBuffer 'aTextureCoord', 2, @texcoords
-    vbo.addIndexBuffer @indexes
+    if @useIndexes
+      vbo.addIndexBuffer @indexes
     if upload
       vbo.upload()
     vbo

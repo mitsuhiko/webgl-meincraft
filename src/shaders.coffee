@@ -74,14 +74,17 @@ class Shader
     gl.linkProgram @prog
     console.debug "Compiled shader from '#{filename}' ->", this
 
+    @attribCache = {}
+    @uniformCache = {}
+
     if !gl.getProgramParameter @prog, gl.LINK_STATUS
       throw new Error 'Could not link shaders'
 
   getUniformLocation: (name) ->
-    webglmc.engine.gl.getUniformLocation @prog, name
+    @uniformCache[name] ?= webglmc.engine.gl.getUniformLocation @prog, name
 
   getAttribLocation: (name) ->
-    webglmc.engine.gl.getAttribLocation @prog, name
+    @attribCache[name] ?= webglmc.engine.gl.getAttribLocation @prog, name
 
   use: (useArrays = true) ->
     webglmc.engine.currentShader = this
