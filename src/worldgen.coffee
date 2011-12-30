@@ -36,18 +36,14 @@ class WorldGeneratorProcess extends webglmc.Process
     density = noise * centerFalloff * plateauFalloff
     density > 0.1
 
-  isCave: (x, y, z) ->
-    false
+  isGroundBlock: (x, y, z) ->
+    return y < this.getGroundHeight x, z
 
-  isGroundLevel: (x, y, z) ->
-    if y > 35
-      return false
-
+  getGroundHeight: (x, z) ->
     nx = x * 0.01
     nz = z * 0.01
     noise = @perlin.noise2D(nx, nz, 3) * 0.5 + 0.5
-
-    y < noise * 30
+    noise * 30
 
   isWater: (x, y, z) ->
     y <= @waterLevel
@@ -60,15 +56,26 @@ class WorldGeneratorProcess extends webglmc.Process
     variation = Math.floor(noise * 4) + 1
     webglmc.BLOCK_TYPES["grass0#{variation}"]
 
+  getRockVariation: (x, y, z) ->
+    blockTypes = webglmc.BLOCK_TYPES
+    nx = 0.3 + x * 1.1
+    ny = 0.4 + y * 1.1
+    nz = 0.5 + z * 1.05
+    noise = @perlin.simpleNoise3D(nx, ny, nz) * 0.5 + 0.5
+    noise = Math.floor(noise * 3)
+    if noise > 0.4
+      return blockTypes.rock01
+    return blockTypes.rock02
+
   getBlock: (x, y, z) ->
     blockTypes = webglmc.BLOCK_TYPES
 
     # Deep below
     if y < -20
-      return blockTypes.rock
+      return blockTypes.granite
 
-    # Ground level
-    if this.isGroundLevel x, y, z
+    # Ground level blocks
+    if this.isGroundBlock x, y, z
       if @waterLevel - 1 <= y <= @waterLevel + 1
         return blockTypes.sand
       else if y < @waterLevel
@@ -77,13 +84,11 @@ class WorldGeneratorProcess extends webglmc.Process
 
     # Flying rocks
     if this.isFlyingRock x, y, z
-      if this.isCave x, y, z
-        return blockTypes.air
       if y <= @waterLevel + 1
         return blockTypes.stone
       if !this.isFlyingRock x, y + 1, z
         return this.getGrassVariation x, y, z
-      return blockTypes.rock
+      return this.getRockVariation x, y, z
 
     # Water level
     if this.isWater x, y, z
@@ -93,6 +98,7 @@ class WorldGeneratorProcess extends webglmc.Process
 
   generateChunk: (def) ->
     {chunkSize, x, y, z} = def
+
     chunk = new Array(Math.pow(chunkSize, 3))
     offX = x * chunkSize
     offY = y * chunkSize

@@ -11,9 +11,10 @@ BLOCK_TYPES =
   grass04:      4
   stone:        10
   granite:      11
-  rock:         12
-  water:        20
-  sand:         21
+  rock01:       20
+  rock02:       21
+  water:        30
+  sand:         31
 
 
 ChunkArray = Uint8Array
