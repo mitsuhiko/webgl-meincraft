@@ -36,6 +36,8 @@ class Engine
 
     # To force antialiasing pass antialias: true as options
     @gl = makeGLContext canvas, @debug
+    @width = @canvas.width
+    @height = @canvas.height
     @aspect = @canvas.width / @canvas.height
     @currentShader = null
 
@@ -67,6 +69,7 @@ class Engine
     @_modelView = null
     @_normal = null
     @_iview = null
+    @_ivp = null
 
   getModelView: ->
     @_modelView ?= mat4.multiply @view.top, @model.top
@@ -83,9 +86,16 @@ class Engine
   getInverseView: ->
     @_iview ?= mat4.inverse @view.top, mat4.create()
 
+  getInverseViewProjection: ->
+    viewproj = mat4.multiply @projection.top, @view.top, mat4.create()
+    @_ivp ?= mat4.inverse viewproj
+
   getCameraPos: ->
     iview = this.getInverseView()
     vec3.create [iview[12], iview[13], iview[14]]
+
+  getForward: ->
+    vec3.create [-@view.top[2], -@view.top[6], -@view.top[10]]
 
   flushUniforms: ->
     if !@_deviceUniformDirty

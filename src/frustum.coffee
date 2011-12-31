@@ -72,7 +72,8 @@ class Frustum
     vec[3] = mvp[15] - mvp[14]
     vec4.normalize vec
 
-  testAABB: (vec1, vec2) ->
+  testAABB: (aabb) ->
+    {vec1, vec2} = aabb
     pointsVisible = 0
 
     for plane in @planes

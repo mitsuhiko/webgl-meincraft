@@ -46,6 +46,16 @@ forceChunkType = (chunk) ->
   chunk
 
 
+class WorldRaycastResult
+  constructor: (ray, hit, x, y, z, blockID) ->
+    @x = x
+    @y = y
+    @z = z
+    @blockID = blockID
+    @ray = ray
+    @hit = hit
+
+
 class World
   constructor: (seed = null) ->
     if seed == null
@@ -184,9 +194,7 @@ class World
     cameraPos = webglmc.engine.getCameraPos()
     chunkCount = 0
     rv = []
-
-    vec1 = vec3.create()
-    vec2 = vec3.create()
+    aabb = new webglmc.AABB()
     chunkSize = CUBE_SIZE * @chunkSize
 
     for key, chunk of @chunks
@@ -198,13 +206,13 @@ class World
 
       # For some reason the frustum culling is broken so I just cull against
       # larger objects.  Seems to do the trick.
-      vec1[0] = chunkSize * (x - 1)
-      vec1[1] = chunkSize * (y - 1)
-      vec1[2] = chunkSize * (z - 1)
-      vec3.add vec1, [chunkSize * 3, chunkSize * 3, chunkSize * 3], vec2
-      distance = vec3.subtract vec1, cameraPos
+      aabb.vec1[0] = chunkSize * (x - 1)
+      aabb.vec1[1] = chunkSize * (y - 1)
+      aabb.vec1[2] = chunkSize * (z - 1)
+      vec3.add aabb.vec1, [chunkSize * 3, chunkSize * 3, chunkSize * 3], aabb.vec2
+      distance = vec3.subtract aabb.vec1, cameraPos
 
-      if !@frustumCulling || frustum.testAABB(vec1, vec2) >= 0
+      if !@frustumCulling || frustum.testAABB(aabb) >= 0
         rv.push vbo: vbo, distance: vec3.norm2(distance)
 
     rv.sort (a, b) -> a.distance - b.distance
@@ -235,6 +243,57 @@ class World
     # multiple times in requestMissingChunks
     this.getChunk x, y, z, true
     @generator.generateChunk x, y, z
+
+  performRayCast: (ray) ->
+    aabb = new webglmc.AABB()
+    chunkSize = CUBE_SIZE * @chunkSize
+    hits = []
+
+    for key, chunk of @chunks
+      [cx, cy, cz] = parseKey key
+
+      aabb.vec1[0] = chunkSize * cx
+      aabb.vec1[1] = chunkSize * cy
+      aabb.vec1[2] = chunkSize * cz
+      vec3.add aabb.vec1, [chunkSize, chunkSize, chunkSize], aabb.vec2
+      if !ray.intersectsAABB aabb
+        continue
+
+      offX = @chunkSize * cx
+      offY = @chunkSize * cy
+      offZ = @chunkSize * cz
+
+      for x in [0..@chunkSize]
+        for y in [0..@chunkSize]
+          for z in [0..@chunkSize]
+            blockID = chunk[x + y * @chunkSize + z * @chunkSize * @chunkSize]
+            if blockID == 0
+              continue
+
+            aabb.vec1[0] = (offX + x) * CUBE_SIZE
+            aabb.vec1[1] = (offY + y) * CUBE_SIZE
+            aabb.vec1[2] = (offZ + z) * CUBE_SIZE
+            vec3.add aabb.vec1, [CUBE_SIZE, CUBE_SIZE, CUBE_SIZE], aabb.vec2
+
+            hit = ray.intersectsAABB aabb, false
+            if hit
+              hits.push [hit, offX + x, offY + y, offZ + z, blockID]
+
+    if !hits.length
+      return null
+
+    hits.sort (a, b) ->
+      a[0].distance - b[0].distance
+
+    new WorldRaycastResult ray, hits[0]...
+
+  pickBlockAtScreenPosition: (x, y) ->
+    ray = webglmc.Ray.fromScreenSpaceNearToFar x, y
+    this.performRayCast ray
+
+  pickBlockAtScreenCenter: ->
+    {width, height} = webglmc.engine
+    this.pickBlockAtScreenPosition width / 2, height / 2
 
   draw: ->
     {gl} = webglmc.engine
