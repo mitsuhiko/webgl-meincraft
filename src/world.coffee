@@ -266,7 +266,7 @@ class World
           if chunk
             callback(chunk, x, y, z)
 
-  fastChunkRaycast: (chunk, cx, cy, cz, ray, hits) ->
+  fastChunkRaycast: (chunk, cx, cy, cz, ray, callback) ->
     aabb = new webglmc.AABB()
     offX = @chunkSize * cx
     offY = @chunkSize * cy
@@ -292,7 +292,7 @@ class World
       if inSize == 1
         blockID = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
         if blockID
-          hits.push [hit, realX, realY, realZ, blockID]
+          callback new WorldRaycastResult ray, hit, realX, realY, realZ, blockID
         return
 
       newInSize = inSize / 2
@@ -310,22 +310,23 @@ class World
   performRayCast: (ray, range = null) ->
     aabb = new webglmc.AABB()
     chunkSize = CUBE_SIZE * @chunkSize
-    hits = []
+    bestResult = null
 
     this.iterChunksAroundCamera range, (chunk, cx, cy, cz) =>
       aabb.vec1[0] = chunkSize * cx
       aabb.vec1[1] = chunkSize * cy
       aabb.vec1[2] = chunkSize * cz
-      vec3.add aabb.vec1, [chunkSize, chunkSize, chunkSize], aabb.vec2
-      if ray.intersectsAABB aabb
-        this.fastChunkRaycast chunk, cx, cy, cz, ray, hits
+      aabb.vec2[0] = aabb.vec1[0] + chunkSize
+      aabb.vec2[1] = aabb.vec1[1] + chunkSize
+      aabb.vec2[2] = aabb.vec1[2] + chunkSize
+      if !ray.intersectsAABB aabb
+        return
 
-    if !hits.length
-      return null
+      this.fastChunkRaycast chunk, cx, cy, cz, ray, (result) ->
+        if !bestResult || bestResult.hit.distance > result.hit.distance
+          bestResult = result
 
-    hits.sort (a, b) ->
-      a[0].distance - b[0].distance
-    new WorldRaycastResult ray, hits[0]...
+    bestResult
 
   pickBlockAtScreenPosition: (x, y, range = null) ->
     ray = webglmc.Ray.fromScreenSpaceNearToFar x, y
