@@ -1,8 +1,17 @@
+# Rendering size of a single block cube
 CUBE_SIZE = 1.0
+
+# must be a power of two for the octree based fast raycasting
+# to work properly.
 CHUNK_SIZE = 32
+
+# View distances are in chunks
 VIEW_DISTANCE_X = 2
 VIEW_DISTANCE_Y = 2
 VIEW_DISTANCE_Z = 2
+
+# Currently blocks are one byte in size which limits them to 255
+# different block types.
 BLOCK_TYPES =
   air:          0
   grass01:      1
@@ -257,49 +266,65 @@ class World
           if chunk
             callback(chunk, x, y, z)
 
+  fastChunkRaycast: (chunk, cx, cy, cz, ray, hits) ->
+    aabb = new webglmc.AABB()
+    offX = @chunkSize * cx
+    offY = @chunkSize * cy
+    offZ = @chunkSize * cz
+
+    walk = (inX, inY, inZ, inSize) =>
+      realX = offX + inX
+      realY = offY + inY
+      realZ = offZ + inZ
+      actualInSize = CUBE_SIZE * inSize
+
+      aabb.vec1[0] = realX * CUBE_SIZE
+      aabb.vec1[1] = realY * CUBE_SIZE
+      aabb.vec1[2] = realZ * CUBE_SIZE
+      aabb.vec2[0] = aabb.vec1[0] + actualInSize
+      aabb.vec2[1] = aabb.vec1[1] + actualInSize
+      aabb.vec2[2] = aabb.vec1[2] + actualInSize
+
+      hit = ray.intersectsAABB aabb
+      if !hit
+        return
+
+      if inSize == 1
+        blockID = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
+        if blockID
+          hits.push [hit, realX, realY, realZ, blockID]
+        return
+
+      newInSize = inSize / 2
+      walk inX, inY, inZ, newInSize
+      walk inX + newInSize, inY, inZ, newInSize
+      walk inX, inY + newInSize, inZ, newInSize
+      walk inX, inY, inZ + newInSize, newInSize
+      walk inX + newInSize, inY + newInSize, inZ, newInSize
+      walk inX, inY + newInSize, inZ + newInSize, newInSize
+      walk inX + newInSize, inY, inZ + newInSize, newInSize
+      walk inX + newInSize, inY + newInSize, inZ + newInSize, newInSize
+
+    walk 0, 0, 0, @chunkSize
+
   performRayCast: (ray, range = null) ->
     aabb = new webglmc.AABB()
     chunkSize = CUBE_SIZE * @chunkSize
     hits = []
 
     this.iterChunksAroundCamera range, (chunk, cx, cy, cz) =>
-
       aabb.vec1[0] = chunkSize * cx
       aabb.vec1[1] = chunkSize * cy
       aabb.vec1[2] = chunkSize * cz
       vec3.add aabb.vec1, [chunkSize, chunkSize, chunkSize], aabb.vec2
-      if !ray.intersectsAABB aabb
-        return
-
-      offX = @chunkSize * cx
-      offY = @chunkSize * cy
-      offZ = @chunkSize * cz
-
-      for inX in [0...@chunkSize]
-        for inY in [0...@chunkSize]
-          for inZ in [0...@chunkSize]
-            realX = offX + inX
-            realY = offY + inY
-            realZ = offZ + inZ
-            blockID = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
-            if blockID == 0
-              continue
-
-            aabb.vec1[0] = realX * CUBE_SIZE
-            aabb.vec1[1] = realY * CUBE_SIZE
-            aabb.vec1[2] = realZ * CUBE_SIZE
-            vec3.add aabb.vec1, [CUBE_SIZE, CUBE_SIZE, CUBE_SIZE], aabb.vec2
-
-            hit = ray.intersectsAABB aabb, false
-            if hit
-              hits.push [hit, realX, realY, realZ, blockID]
+      if ray.intersectsAABB aabb
+        this.fastChunkRaycast chunk, cx, cy, cz, ray, hits
 
     if !hits.length
       return null
 
     hits.sort (a, b) ->
       a[0].distance - b[0].distance
-
     new WorldRaycastResult ray, hits[0]...
 
   pickBlockAtScreenPosition: (x, y, range = null) ->
