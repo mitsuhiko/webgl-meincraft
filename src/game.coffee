@@ -36,11 +36,13 @@ class Game
     action = keyMapping[event.which]
     if action?
       @actions[action] = true
+      false
 
   onKeyUp: (event) ->
     action = keyMapping[event.which]
     if action?
       @actions[action] = false
+      false
 
   run: ->
     webglmc.resmgr.wait =>
