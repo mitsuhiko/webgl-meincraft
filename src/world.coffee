@@ -148,8 +148,8 @@ class World
         return chunk[cx + cy * @chunkSize + cz * @chunkSize * @chunkSize] == 0
       return this.getBlock(offX + cx, offY + cy, offZ + cz) == 0
       
-    addSide = (side, id) =>
-      texture = this.getBlockTexture id
+    addSide = (side) =>
+      texture = this.getBlockTexture blockID
       maker.addSide side, offX + cx * CUBE_SIZE, offY + cy * CUBE_SIZE,
         offZ + cz * CUBE_SIZE, texture
 
@@ -159,12 +159,12 @@ class World
           blockID = chunk[cx + cy * @chunkSize + cz * @chunkSize * @chunkSize]
           if blockID == 0
             continue
-          if isAir(cx - 1, cy, cz) then addSide('left', blockID)
-          if isAir(cx + 1, cy, cz) then addSide('right', blockID)
-          if isAir(cx, cy - 1, cz) then addSide('bottom', blockID)
-          if isAir(cx, cy + 1, cz) then addSide('top', blockID)
-          if isAir(cx, cy, cz - 1) then addSide('far', blockID)
-          if isAir(cx, cy, cz + 1) then addSide('near', blockID)
+          if isAir cx - 1, cy, cz then addSide 'left'
+          if isAir cx + 1, cy, cz then addSide 'right'
+          if isAir cx, cy - 1, cz then addSide 'bottom'
+          if isAir cx, cy + 1, cz then addSide 'top'
+          if isAir cx, cy, cz - 1 then addSide 'far'
+          if isAir cx, cy, cz + 1 then addSide 'near'
 
     maker.makeVBO()
 
