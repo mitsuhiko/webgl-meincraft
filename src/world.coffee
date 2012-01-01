@@ -88,8 +88,7 @@ class World
     inX = mod x, @chunkSize
     inY = mod y, @chunkSize
     inZ = mod z, @chunkSize
-    rv = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
-    rv
+    chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
 
   setBlock: (x, y, z, type) ->
     cx = div x, @chunkSize
@@ -263,21 +262,24 @@ class World
       offY = @chunkSize * cy
       offZ = @chunkSize * cz
 
-      for x in [0..@chunkSize]
-        for y in [0..@chunkSize]
-          for z in [0..@chunkSize]
-            blockID = chunk[x + y * @chunkSize + z * @chunkSize * @chunkSize]
+      for inX in [0...@chunkSize]
+        for inY in [0...@chunkSize]
+          for inZ in [0...@chunkSize]
+            realX = offX + inX
+            realY = offY + inY
+            realZ = offZ + inZ
+            blockID = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
             if blockID == 0
               continue
 
-            aabb.vec1[0] = (offX + x) * CUBE_SIZE
-            aabb.vec1[1] = (offY + y) * CUBE_SIZE
-            aabb.vec1[2] = (offZ + z) * CUBE_SIZE
+            aabb.vec1[0] = realX * CUBE_SIZE
+            aabb.vec1[1] = realY * CUBE_SIZE
+            aabb.vec1[2] = realZ * CUBE_SIZE
             vec3.add aabb.vec1, [CUBE_SIZE, CUBE_SIZE, CUBE_SIZE], aabb.vec2
 
             hit = ray.intersectsAABB aabb, false
             if hit
-              hits.push [hit, offX + x, offY + y, offZ + z, blockID]
+              hits.push [hit, realX, realY, realZ, blockID]
 
     if !hits.length
       return null
