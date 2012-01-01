@@ -243,20 +243,33 @@ class World
     this.getChunk x, y, z, true
     @generator.generateChunk x, y, z
 
-  performRayCast: (ray) ->
+  iterChunksAroundCamera: (range, callback) ->
+    if range == null
+      for key, chunk of @chunks
+        callback(chunk, parseKey(key)...)
+      return
+
+    [cx, cy, cz] = this.chunkAtCameraPosition()
+    for x in [cx - range..cx + range]
+      for y in [cy - range..cy + range]
+        for z in [cz - range..cz + range]
+          chunk = @chunks["#{x}|#{y}|#{z}"]
+          if chunk
+            callback(chunk, x, y, z)
+
+  performRayCast: (ray, range = null) ->
     aabb = new webglmc.AABB()
     chunkSize = CUBE_SIZE * @chunkSize
     hits = []
 
-    for key, chunk of @chunks
-      [cx, cy, cz] = parseKey key
+    this.iterChunksAroundCamera range, (chunk, cx, cy, cz) =>
 
       aabb.vec1[0] = chunkSize * cx
       aabb.vec1[1] = chunkSize * cy
       aabb.vec1[2] = chunkSize * cz
       vec3.add aabb.vec1, [chunkSize, chunkSize, chunkSize], aabb.vec2
       if !ray.intersectsAABB aabb
-        continue
+        return
 
       offX = @chunkSize * cx
       offY = @chunkSize * cy
@@ -289,13 +302,17 @@ class World
 
     new WorldRaycastResult ray, hits[0]...
 
-  pickBlockAtScreenPosition: (x, y) ->
+  pickBlockAtScreenPosition: (x, y, range = null) ->
     ray = webglmc.Ray.fromScreenSpaceNearToFar x, y
-    this.performRayCast ray
+    this.performRayCast ray, range
 
-  pickBlockAtScreenCenter: ->
+  pickBlockAtScreenCenter: (range = null) ->
     {width, height} = webglmc.engine
-    this.pickBlockAtScreenPosition width / 2, height / 2
+    this.pickBlockAtScreenPosition width / 2, height / 2, range
+
+  pickCloseBlockAtScreenCenter: ->
+    rv = this.pickBlockAtScreenCenter 1
+    if rv && rv.hit.distance < 10 then rv else null
 
   draw: ->
     {gl} = webglmc.engine
