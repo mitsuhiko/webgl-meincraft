@@ -74,22 +74,21 @@ class WorldGeneratorProcess extends webglmc.Process
     if y < -20
       return blockTypes.granite
 
-    if false
-      # Ground level blocks
-      if this.isGroundBlock x, y, z
-        if @waterLevel - 1 <= y <= @waterLevel + 1
-          return blockTypes.sand
-        else if y < @waterLevel
-          return blockTypes.stone
-        return this.getGrassVariation x, y, z
+    # Ground level blocks
+    if this.isGroundBlock x, y, z
+      if @waterLevel - 1 <= y <= @waterLevel + 1
+        return blockTypes.sand
+      else if y < @waterLevel
+        return blockTypes.stone
+      return this.getGrassVariation x, y, z
 
-      # Flying rocks
-      if this.isFlyingRock x, y, z
-        if y <= @waterLevel + 1
-          return blockTypes.stone
-        if !this.isFlyingRock x, y + 1, z
-          return this.getGrassVariation x, y, z
-        return this.getRockVariation x, y, z
+    # Flying rocks
+    if this.isFlyingRock x, y, z
+      if y <= @waterLevel + 1
+        return blockTypes.stone
+      if !this.isFlyingRock x, y + 1, z
+        return this.getGrassVariation x, y, z
+      return this.getRockVariation x, y, z
 
     # Water level
     if this.isWater x, y, z

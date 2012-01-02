@@ -7,6 +7,9 @@ keyMapping =
   40:     'lookDown'      # Arrow Down
   37:     'lookLeft'      # Arrow Left
   39:     'lookRight'     # Arrow Right
+  69:     'putBlock'      # E
+  81:     'removeBlock'   # Q
+
 
 
 class Game
@@ -24,6 +27,7 @@ class Game
     @cam.lookAt vec3.create([-0.5, 20.0, 0.5])
 
     @world = new webglmc.World
+    @currentSelection = null
 
   initEventHandlers: ->
     $('body')
@@ -36,6 +40,12 @@ class Game
     action = keyMapping[event.which]
     if action?
       @actions[action] = true
+      if @currentSelection
+        s = @currentSelection
+        if action == 'removeBlock'
+          this.removeBlock s.x, s.y, s.z
+        else if action == 'putBlock'
+          this.putBlock s.x, s.y, s.z, s.hit.side
       false
 
   onKeyUp: (event) ->
@@ -43,6 +53,19 @@ class Game
     if action?
       @actions[action] = false
       false
+
+  removeBlock: (x, y, z) ->
+    @world.setBlock x, y, z, 0
+
+  putBlock: (x, y, z, side) ->
+    switch side
+      when 'top' then y += 1
+      when 'bottom' then y -= 1
+      when 'right' then x += 1
+      when 'left' then x -= 1
+      when 'near' then z += 1
+      when 'far' then z -= 1
+    @world.setBlock x, y, z, webglmc.BLOCK_TYPES.stone
 
   run: ->
     webglmc.resmgr.wait =>
@@ -72,8 +95,10 @@ class Game
       @cam.rotateScreenX -dt * 0.5
     if @actions.lookRight
       @cam.rotateScreenX dt * 0.5
+
     @cam.apply()
     @world.requestMissingChunks()
+    @currentSelection = @world.pickCloseBlockAtScreenCenter()
 
   render: ->
     {gl} = webglmc.engine
@@ -82,6 +107,9 @@ class Game
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
     @world.draw()
+    if @currentSelection
+      s = @currentSelection
+      @world.drawBlockHighlight s.x, s.y, s.z, s.hit.side
 
 
 initEngineAndGame = (selector, debug) ->

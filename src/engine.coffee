@@ -45,6 +45,8 @@ class Engine
     @gl.depthFunc @gl.LEQUAL
     @gl.enable @gl.CULL_FACE
     @gl.cullFace @gl.BACK
+    @gl.enable @gl.BLEND
+    @gl.blendFunc @gl.SRC_ALPHA, @gl.ONE_MINUS_SRC_ALPHA
 
     @model = new MatrixStack
     @view = new MatrixStack

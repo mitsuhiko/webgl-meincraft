@@ -83,6 +83,7 @@ class World
       chunkStats: webglmc.debugPanel.addDisplay 'Chunk stats'
 
     @atlas = makeBlockAtlas()
+    @selectionTexture = webglmc.resmgr.resources.selection
 
   getBlockTexture: (blockID) ->
     @atlas.slices[blockID]
@@ -285,7 +286,7 @@ class World
       aabb.vec2[1] = aabb.vec1[1] + actualInSize
       aabb.vec2[2] = aabb.vec1[2] + actualInSize
 
-      hit = ray.intersectsAABB aabb
+      hit = ray.intersectsAABB aabb, inSize != 1
       if !hit
         return
 
@@ -339,6 +340,22 @@ class World
   pickCloseBlockAtScreenCenter: ->
     rv = this.pickBlockAtScreenCenter 1
     if rv && rv.hit.distance < 10 then rv else null
+
+  drawBlockHighlight: (x, y, z, side) ->
+    {gl} = webglmc.engine
+    maker = new webglmc.CubeMaker CUBE_SIZE
+    rx = x * CUBE_SIZE
+    ry = y * CUBE_SIZE
+    rz = z * CUBE_SIZE
+    maker.addSide side, rx, ry, rz, @selectionTexture
+    vbo = maker.makeVBO()
+
+    gl.disable(gl.DEPTH_TEST)
+    @selectionTexture.bind()
+    vbo.draw()
+    gl.enable(gl.DEPTH_TEST)
+
+    vbo.destroy()
 
   draw: ->
     {gl} = webglmc.engine

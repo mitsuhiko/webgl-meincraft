@@ -1,14 +1,6 @@
 class RaycastHit
-  this.UNDEFINED = -1
-  this.LEFT = 0
-  this.RIGHT = 1
-  this.BOTTOM = 2
-  this.TOP = 3
-  this.NEAR = 4
-  this.FAR = 5
-  this.INSIDE = 6
 
-  constructor: (distance, side = RaycastHit.UNDEFINED) ->
+  constructor: (distance, side = null) ->
     @distance = distance
     @side = side
 
@@ -43,12 +35,12 @@ class Ray
     {vec1, vec2} = aabb
     lowt = 0.0
     didHit = false
-    sideHit = RaycastHit.UNDEFINED
+    sideHit = null
 
     if checkInside &&
        @origin[0] > vec1[0] && @origin[1] > vec1[1] && @origin[0] > vec1[2] &&
        @origin[0] < vec2[0] && @origin[1] < vec2[1] && @origin[2] < vec2[2]
-        return new RaycastHit 0, RaycastHit.INSIDE
+        return new RaycastHit 0, 'inside'
 
     checkHit = (vec, s, sa, sb, side) =>
       if vec == vec1
@@ -69,12 +61,12 @@ class Ray
           lowt = t
           sideHit = side
 
-    checkHit vec1, 0, 1, 2, RaycastHit.LEFT
-    checkHit vec2, 0, 1, 2, RaycastHit.RIGHT
-    checkHit vec1, 1, 0, 2, RaycastHit.BOTTOM
-    checkHit vec2, 1, 0, 2, RaycastHit.TOP
-    checkHit vec1, 2, 0, 1, RaycastHit.FAR
-    checkHit vec2, 2, 0, 1, RaycastHit.NEAR
+    checkHit vec1, 0, 1, 2, 'left'
+    checkHit vec2, 0, 1, 2, 'right'
+    checkHit vec1, 1, 0, 2, 'bottom'
+    checkHit vec2, 1, 0, 2, 'top'
+    checkHit vec1, 2, 0, 1, 'far'
+    checkHit vec2, 2, 0, 1, 'near'
 
     if didHit then new RaycastHit(lowt, sideHit) else null
 

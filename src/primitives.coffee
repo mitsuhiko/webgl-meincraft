@@ -96,6 +96,14 @@ class CubeMaker
     @texcoords = []
     @indexes = []
 
+  addAllSides: (x, y, z, texture = null, size = @defaultSize) ->
+    addSide 'left', x, y, z, texture, size
+    addSide 'right', x, y, z, texture, size
+    addSide 'top', x, y, z, texture, size
+    addSide 'bottom', x, y, z, texture, size
+    addSide 'left', x, y, z, texture, size
+    addSide 'right', x, y, z, texture, size
+
   addSide: (side, x, y, z, texture = null, size = @defaultSize) ->
     halfsize = size / 2
     iterable = if !@useIndexes then CUBE_INDEXES else [0..3]
