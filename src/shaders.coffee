@@ -1,29 +1,45 @@
+lastSourceID = 0
 shaderSourceCache = {}
+shaderReverseMapping = {}
 
 
-shaderFromSource = (type, source) ->
+onShaderError = (type, log, stage, filename = '<string>') ->
+  filename = webglmc.autoShortenFilename filename
+  console.error "Shader error when #{stage} #{type} #{filename}"
+  console.debug "Shader debug information:"
+  lines = log.split /\r?\n/
+  for line in lines
+    match = line.match /(\w+):\s+(\d+):(\d+):\s*(.*)$/
+    if match
+      [dummy, level, sourceID, lineno, message] = match
+      errorFilename = webglmc.autoShortenFilename shaderReverseMapping[sourceID]
+      console.warn "[#{level}] #{errorFilename}:#{lineno}: #{message}"
+    else
+      console.log line
+  throw "Abort: Unable to load shader '#{filename}' because of errors"
+
+
+shaderFromSource = (type, source, filename = null) ->
   gl = webglmc.engine.gl
   shader = gl.createShader gl[type]
   source = "#define #{type}\n#{source}"
   gl.shaderSource shader, source
   gl.compileShader shader
   if !gl.getShaderParameter shader, gl.COMPILE_STATUS
-    throw new Error 'An error ocurred compiling the shader: ' +
-      gl.getShaderInfoLog shader
+    log = gl.getShaderInfoLog shader
+    onShaderError type, log, 'compiling', filename
   shader
 
 
-joinFilename = (parentFile, file) ->
-  parentFile.match(/^(.*\/)/)[1] + file
-
-
-preprocessSource = (filename, source, callback) ->
+preprocessSource = (filename, source, sourceID, callback) ->
   lines = []
   shadersToInclude = 0
   processingDone = false
   checkDone = ->
     if processingDone && shadersToInclude == 0
-      callback(lines.join('\n'))
+      callback lines.join('\n')
+
+  lines.push '#line 0 ' + sourceID
 
   for line in source.split /\r?\n/
     if match = line.match /^\s*#include\s+"(.*?)"\s*$/
@@ -31,8 +47,9 @@ preprocessSource = (filename, source, callback) ->
       lines.push null
       shadersToInclude++
       do (insertLocation) ->
-        loadShaderSource joinFilename(filename, match[1]), (source) ->
-          lines[insertLocation] = source
+        loadShaderSource webglmc.joinFilename(filename, match[1]), (source) ->
+          lines[insertLocation] = source + '\n#line ' + (insertLocation - 1) +
+            ' ' + sourceID
           shadersToInclude--
           checkDone()
     else
@@ -44,13 +61,16 @@ preprocessSource = (filename, source, callback) ->
 
 loadShaderSource = (filename, callback) ->
   process = (source) ->
-    shaderSourceCache[filename] = source
-    preprocessSource filename, source, callback
+    entry = shaderSourceCache[filename]
+    if !entry
+      shaderSourceCache[filename] = entry = [source, lastSourceID++]
+      shaderReverseMapping[entry[1]] = filename
+    preprocessSource filename, source, entry[1], callback
   cached = shaderSourceCache[filename]
   if cached?
-    process cached
+    process cached[0]
   else
-    console.debug "Loading shader source '#{filename}'"
+    console.debug "Loading shader source '#{webglmc.autoShortenFilename filename}'"
     $.ajax
       url:      filename
       dataType: 'text'
@@ -63,22 +83,24 @@ loadShader = (filename, callback) ->
 
 
 class Shader
-  constructor: (source, filename = '<string>') ->
+  constructor: (source, filename = null) ->
     {gl} = webglmc.engine
 
     @prog = gl.createProgram()
-    vertexShader = shaderFromSource 'VERTEX_SHADER', source
-    fragmentShader = shaderFromSource 'FRAGMENT_SHADER', source
+    vertexShader = shaderFromSource 'VERTEX_SHADER', source, filename
+    fragmentShader = shaderFromSource 'FRAGMENT_SHADER', source, filename
     gl.attachShader @prog, vertexShader
     gl.attachShader @prog, fragmentShader
     gl.linkProgram @prog
-    console.debug "Compiled shader from '#{filename}' ->", this
 
     @attribCache = {}
     @uniformCache = {}
 
     if !gl.getProgramParameter @prog, gl.LINK_STATUS
-      throw new Error 'Could not link shaders'
+      log = gl.getProgramInfoLog @prog
+      onShaderError 'PROGRAM', log, 'linking', filename
+
+    console.debug "Compiled shader from '#{filename}' ->", this
 
   getUniformLocation: (name) ->
     @uniformCache[name] ?= webglmc.engine.gl.getUniformLocation @prog, name

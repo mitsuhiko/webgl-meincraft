@@ -23,8 +23,8 @@ class Game
 
     # Initialize a small new world
     @cam = new webglmc.Camera
-    @cam.position = vec3.create([-20.0, 60.0, -20.0])
-    @cam.lookAt vec3.create([-0.5, 20.0, 0.5])
+    @cam.position = vec3.create([-20.0, 18.0, -20.0])
+    @cam.lookAt vec3.create([-0.5, 18.0, 0.5])
 
     @world = new webglmc.World
     @currentSelection = null
@@ -43,9 +43,9 @@ class Game
       if @currentSelection
         s = @currentSelection
         if action == 'removeBlock'
-          this.removeBlock s.x, s.y, s.z
+          @world.setBlock s.x, s.y, s.z, 0
         else if action == 'putBlock'
-          this.putBlock s.x, s.y, s.z, s.hit.side
+          @world.setBlock s.nx, s.ny, s.nz, webglmc.BLOCK_TYPES.stone
       false
 
   onKeyUp: (event) ->
@@ -53,19 +53,6 @@ class Game
     if action?
       @actions[action] = false
       false
-
-  removeBlock: (x, y, z) ->
-    @world.setBlock x, y, z, 0
-
-  putBlock: (x, y, z, side) ->
-    switch side
-      when 'top' then y += 1
-      when 'bottom' then y -= 1
-      when 'right' then x += 1
-      when 'left' then x -= 1
-      when 'near' then z += 1
-      when 'far' then z -= 1
-    @world.setBlock x, y, z, webglmc.BLOCK_TYPES.stone
 
   run: ->
     webglmc.resmgr.wait =>

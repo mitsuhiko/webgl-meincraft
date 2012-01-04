@@ -21,7 +21,8 @@ class ResourceManager
     def.filename = forceAbsolute(filename)
     def.key = "#{def.type}/#{filename}"
 
-    console.debug "Requesting resource '#{def.filename}' [type=#{def.type}, from=#{typeSource}]"
+    console.debug "Requesting resource '#{webglmc.autoShortenFilename def.filename
+      }' [type=#{def.type}, from=#{typeSource}]"
 
     if callback && @resources[def.key]?
       if shortName && !@resourceDefs[shortName]?
@@ -79,8 +80,8 @@ class ResourceManager
     image: (mgr, def, callback) ->
       rv = new Image()
       rv.onload = =>
-        console.debug "Loaded image from '#{def.filename}' [dim=#{rv.width
-          }x#{rv.height}] ->", rv
+        console.debug "Loaded image from '#{webglmc.autoShortenFilename def.filename
+          }' [dim=#{rv.width }x#{rv.height}] ->", rv
         callback rv
       rv.src = def.filename
 

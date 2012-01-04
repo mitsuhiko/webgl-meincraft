@@ -62,7 +62,8 @@ textureFromImage = (image, options) ->
     gl.generateMipmap gl.TEXTURE_2D
   gl.bindTexture gl.TEXTURE_2D, null
 
-  console.debug "Created texture from '#{image.src || "<dynamic>"}' [dim=#{image.width
+  filename = webglmc.autoShortenFilename(image.src || '<dynamic>')
+  console.debug "Created texture from '#{filename}' [dim=#{image.width
     }x#{image.height}, filtering=#{filtering}] ->", texture
 
   texture

@@ -64,6 +64,18 @@ class WorldRaycastResult
     @ray = ray
     @hit = hit
 
+    # Neighboring block
+    switch @hit.side
+      when 'top' then y += 1
+      when 'bottom' then y -= 1
+      when 'right' then x += 1
+      when 'left' then x -= 1
+      when 'near' then z += 1
+      when 'far' then z -= 1
+    @nx = x
+    @ny = y
+    @nz = z
+
 
 class World
   constructor: (seed = null) ->
@@ -116,12 +128,12 @@ class World
     # in case we replace air with non air at an edge block we need
     # to mark the vbos nearly as dirty
     if ((type == 0) != (oldType == 0))
-      if (mod(x + 1, @chunkSize) == 0) then this.markVBODirty cx + 1, cy, cz
-      if (mod(x - 1, @chunkSize) == 0) then this.markVBODirty cx - 1, cy, cz
-      if (mod(y + 1, @chunkSize) == 0) then this.markVBODirty cx, cy + 1, cz
-      if (mod(y - 1, @chunkSize) == 0) then this.markVBODirty cx, cy - 1, cz
-      if (mod(z + 1, @chunkSize) == 0) then this.markVBODirty cx, cy, cz + 1
-      if (mod(z - 1, @chunkSize) == 0) then this.markVBODirty cx, cy, cz - 1
+      if inX == @chunkSize - 1 then this.markVBODirty cx + 1, cy, cz
+      else if inX == 0 then         this.markVBODirty cx - 1, cy, cz
+      if inY == @chunkSize - 1 then this.markVBODirty cx, cy + 1, cz
+      else if inY == 0 then         this.markVBODirty cx, cy - 1, cz
+      if inZ == @chunkSize - 1 then this.markVBODirty cx, cy, cz + 1
+      else if inZ == 0 then         this.markVBODirty cx, cy, cz - 1
 
   getChunk: (x, y, z, create = false) ->
     key = "#{x}|#{y}|#{z}"
@@ -293,7 +305,9 @@ class World
       if inSize == 1
         blockID = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
         if blockID
-          callback new WorldRaycastResult ray, hit, realX, realY, realZ, blockID
+          result = new WorldRaycastResult ray, hit, realX, realY, realZ, blockID
+          if !this.getBlock result.nx, result.ny, result.nz
+            callback result
         return
 
       newInSize = inSize / 2
@@ -323,7 +337,7 @@ class World
       if !ray.intersectsAABB aabb
         return
 
-      this.fastChunkRaycast chunk, cx, cy, cz, ray, (result) ->
+      this.fastChunkRaycast chunk, cx, cy, cz, ray, (result) =>
         if !bestResult || bestResult.hit.distance > result.hit.distance
           bestResult = result
 
