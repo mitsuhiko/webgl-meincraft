@@ -88,7 +88,9 @@ class World
     @cachedVBOs = {}
     @dirtyVBOs = {}
     @shader = webglmc.resmgr.resources['shaders/simple']
-    @sunDirection = vec3.create([0.7, 0.8, 1.0])
+    @sunColor = webglmc.floatColorFromHex '#F2F3DC'
+    @sunDirection = vec3.create [0.7, 0.8, 1.0]
+    @fogColor = webglmc.floatColorFromHex '#CEEBC0'
     @frustumCulling = webglmc.getRuntimeParameter('frustumCulling') == '1'
 
     @displays =
@@ -371,12 +373,22 @@ class World
 
     vbo.destroy()
 
+  update: (dt) ->
+
   draw: ->
     {gl} = webglmc.engine
 
+    gl.clearColor @fogColor...
+    gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
+
     @shader.use()
+
+    loc = @shader.getUniformLocation "uSunColor"
+    gl.uniform4fv loc, @sunColor if loc
     loc = @shader.getUniformLocation "uSunDirection"
-    gl.uniform3fv loc, @sunDirection
+    gl.uniform3fv loc, @sunDirection if loc
+    loc = @shader.getUniformLocation "uFogColor"
+    gl.uniform4fv loc, @fogColor if loc
 
     @atlas.texture.bind()
     this.iterVisibleVBOs (vbo) =>

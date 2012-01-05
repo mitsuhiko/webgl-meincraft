@@ -84,14 +84,12 @@ class Game
       @cam.rotateScreenX dt * 0.5
 
     @cam.apply()
+    @world.update dt
     @world.requestMissingChunks()
     @currentSelection = @world.pickCloseBlockAtScreenCenter()
 
   render: ->
     {gl} = webglmc.engine
-
-    gl.clearColor 0.0, 0.0, 0.0, 1.0
-    gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
     @world.draw()
     if @currentSelection
