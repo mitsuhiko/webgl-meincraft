@@ -3,6 +3,7 @@
 #include "fog.glsl"
 uniform vec3 uSunDirection;
 uniform vec4 uFogColor;
+uniform float uFogDensity;
 uniform vec4 uSunColor;
 varying vec3 vNormal;
 varying vec2 vTextureCoord;
@@ -18,7 +19,7 @@ void main(void)
     vSunDirection = uSunDirection;
     vNormal = uNormalMatrix * aVertexNormal;
     vHalfVec = normalize(aVertexPosition + vSunDirection);
-    vFogFactor = getFogFactor(0.005);
+    vFogFactor = getFogFactor(uFogDensity);
 }
 #endif
 

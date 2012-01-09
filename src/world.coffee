@@ -94,6 +94,7 @@ class World
     @sunColor = webglmc.floatColorFromHex '#F2F3DC'
     @sunDirection = vec3.create [0.7, 0.8, 1.0]
     @fogColor = webglmc.floatColorFromHex '#CEEBC0'
+    @fogDensity = 0.01
 
     @displays =
       chunkStats: webglmc.debugPanel.addDisplay 'Chunk stats'
@@ -373,6 +374,7 @@ class World
       @shader.uniform4fv "uSunColor", @sunColor
       @shader.uniform3fv "uSunDirection", @sunDirection
       @shader.uniform4fv "uFogColor", @fogColor
+      @shader.uniform1f "uFogDensity", @fogDensity
       this.iterVisibleVBOs (vbo) =>
         vbo.draw()
 
