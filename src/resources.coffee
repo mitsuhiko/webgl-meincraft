@@ -1,5 +1,6 @@
 RESOURCES = [
-  ['shaders/simple', 'assets/shaders/simple.glsl'],
+  ['shaders/block', 'assets/shaders/block.glsl'],
+  ['shaders/postprocess', 'assets/shaders/postprocess.glsl'],
   ['selection', 'assets/textures/selection.png.texture'],
   ['blocks/grass01', 'assets/textures/grass01.png']
   ['blocks/grass02', 'assets/textures/grass02.png']

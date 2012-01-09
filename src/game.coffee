@@ -21,13 +21,13 @@ class Game
   initGame: ->
     {engine} = webglmc
 
-    # Initialize a small new world
     @cam = new webglmc.Camera
     @cam.position = vec3.create([-20.0, 18.0, -20.0])
     @cam.lookAt vec3.create([-0.5, 18.0, 0.5])
-
     @world = new webglmc.World
     @currentSelection = null
+
+    @processor = new webglmc.Processor webglmc.resmgr.resources['shaders/postprocess']
 
   initEventHandlers: ->
     $('body')
@@ -91,10 +91,12 @@ class Game
   render: ->
     {gl} = webglmc.engine
 
+    @processor.push()
     @world.draw()
     if @currentSelection
       s = @currentSelection
       @world.drawBlockHighlight s.x, s.y, s.z, s.hit.side
+    @processor.pop()
 
 
 initEngineAndGame = (selector, debug) ->

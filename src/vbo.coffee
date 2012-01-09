@@ -43,7 +43,9 @@ class InterleavedRemoteBuffer extends RemoteBuffer
     @offset = offset
 
 
-class VertexBufferObject
+class VertexBufferObject extends webglmc.ContextObject
+  @withStack 'vbo'
+
   constructor: (drawMode, count, options = {}) ->
     @drawMode = webglmc.engine.gl[drawMode]
     @count = count
@@ -113,15 +115,11 @@ class VertexBufferObject
     @buffers = {}
     @count = 0
 
-  draw: ->
-    if !@count then return
-
-    {engine} = webglmc
-    {gl} = engine
+  bind: ->
+    {gl} = webglmc.engine
+    shader = webglmc.Shader.top()
     drawElements = @buffers.__index__?
     locsToDisable = []
-
-    engine.flushUniforms()
 
     if buffer = @buffers.__interleaved__
       gl.bindBuffer gl.ARRAY_BUFFER, buffer.id
@@ -132,7 +130,7 @@ class VertexBufferObject
       if buffer.id != null
         gl.bindBuffer gl.ARRAY_BUFFER, buffer.id
 
-      loc = engine.currentShader.getAttribLocation name
+      loc = shader.getAttribLocation name
       if loc >= 0
         gl.vertexAttribPointer loc, buffer.size, buffer.elementType,
           false, buffer.stride, buffer.offset
@@ -145,8 +143,28 @@ class VertexBufferObject
     else
       gl.drawArrays @drawMode, 0, @count
 
-    for loc in locsToDisable
-      gl.disableVertexAttribArray loc
+  unbind: ->
+    {gl} = webglmc.engine
+    shader = webglmc.Shader.top()
+    for name, buffer of @buffers
+      if !buffer.isSpecial
+        loc = shader.getAttribLocation name
+        if loc >= 0
+          gl.disableVertexAttribArray loc
+
+  draw: ->
+    if !@count then return
+    {gl} = webglmc.engine
+
+    this.push()
+    drawElements = @buffers.__index__?
+    webglmc.engine.flushUniforms()
+    if drawElements
+      gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, @buffers.__index__.id
+      gl.drawElements @drawMode, @count, gl.UNSIGNED_SHORT, 0
+    else
+      gl.drawArrays @drawMode, 0, @count
+    this.pop()
 
 
 public = self.webglmc ?= {}

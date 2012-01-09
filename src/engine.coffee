@@ -34,12 +34,11 @@ class Engine
 
     @frameTimeDisplay = webglmc.debugPanel.addDisplay 'Frame time'
 
-    # To force antialiasing pass antialias: true as options
-    @gl = makeGLContext canvas, @debug
+    @gl = makeGLContext canvas, @debug,
+      antialias: false
     @width = @canvas.width
     @height = @canvas.height
     @aspect = @canvas.width / @canvas.height
-    @currentShader = null
 
     @gl.enable @gl.DEPTH_TEST
     @gl.depthFunc @gl.LEQUAL
@@ -103,17 +102,20 @@ class Engine
     if !@_deviceUniformDirty
       return
 
-    loc = @currentShader.getUniformLocation "uModelMatrix"
+    prog = webglmc.Shader.top()
+    loc = prog.getUniformLocation "uViewportSize"
+    @gl.uniform2f loc, @width, @height if loc
+    loc = prog.getUniformLocation "uModelMatrix"
     @gl.uniformMatrix4fv loc, false, @model.top if loc
-    loc = @currentShader.getUniformLocation "uViewMatrix"
+    loc = prog.getUniformLocation "uViewMatrix"
     @gl.uniformMatrix4fv loc, false, @view.top if loc
-    loc = @currentShader.getUniformLocation "uModelViewMatrix"
+    loc = prog.getUniformLocation "uModelViewMatrix"
     @gl.uniformMatrix4fv loc, false, this.getModelView() if loc
-    loc = @currentShader.getUniformLocation "uProjectionMatrix"
+    loc = prog.getUniformLocation "uProjectionMatrix"
     @gl.uniformMatrix4fv loc, false, @projection.top if loc
-    loc = @currentShader.getUniformLocation "uModelViewProjectionMatrix"
+    loc = prog.getUniformLocation "uModelViewProjectionMatrix"
     @gl.uniformMatrix4fv loc, false, this.getModelViewProjection() if loc
-    loc = @currentShader.getUniformLocation "uNormalMatrix"
+    loc = prog.getUniformLocation "uNormalMatrix"
     @gl.uniformMatrix3fv loc, false, this.getNormal() if loc
 
     @_deviceUniformDirty = false

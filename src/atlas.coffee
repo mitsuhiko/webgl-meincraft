@@ -82,7 +82,7 @@ class AtlasBuilder
     true
 
   makeAtlas: (options = {}) ->
-    texture = webglmc.textureFromImage @canvas, options
+    texture = webglmc.Texture.fromImage @canvas, options
     slices = {}
     for key, def of @slices
       slices[key] = texture.slice def.x, texture.height - def.y - def.height,

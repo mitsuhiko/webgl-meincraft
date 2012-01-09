@@ -94,7 +94,7 @@ class ResourceManager
       if !imageFilename
         imageFilename = def.filename.match(/^(.*)\.texture$/)[1]
       mgr.add null, imageFilename, {}, (image) =>
-        callback webglmc.textureFromImage(image, def)
+        callback webglmc.Texture.fromImage(image, def)
 
 
 public = self.webglmc ?= {}

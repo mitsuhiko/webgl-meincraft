@@ -14,6 +14,7 @@ uniform mat3 uNormalMatrix;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uModelViewProjectionMatrix;
+uniform vec2 uViewportSize;
 
 uniform sampler2D uTexture;
 

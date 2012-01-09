@@ -6,9 +6,12 @@ CUBE_SIZE = 1.0
 CHUNK_SIZE = 32
 
 # View distances are in chunks
-VIEW_DISTANCE_X = 2
-VIEW_DISTANCE_Y = 2
-VIEW_DISTANCE_Z = 2
+GENERATE_DISTANCE_X = 2
+GENERATE_DISTANCE_Y = 2
+GENERATE_DISTANCE_Z = 2
+VIEW_DISTANCE_X = 4
+VIEW_DISTANCE_Y = 4
+VIEW_DISTANCE_Z = 4
 
 # Currently blocks are one byte in size which limits them to 255
 # different block types.
@@ -87,11 +90,10 @@ class World
     @chunks = {}
     @cachedVBOs = {}
     @dirtyVBOs = {}
-    @shader = webglmc.resmgr.resources['shaders/simple']
+    @shader = webglmc.resmgr.resources['shaders/block']
     @sunColor = webglmc.floatColorFromHex '#F2F3DC'
     @sunDirection = vec3.create [0.7, 0.8, 1.0]
     @fogColor = webglmc.floatColorFromHex '#CEEBC0'
-    @frustumCulling = webglmc.getRuntimeParameter('frustumCulling') == '1'
 
     @displays =
       chunkStats: webglmc.debugPanel.addDisplay 'Chunk stats'
@@ -213,35 +215,25 @@ class World
 
   iterVisibleVBOs: (callback) ->
     start = Date.now()
-    frustum = webglmc.engine.getCurrentFrustum()
     cameraPos = webglmc.engine.getCameraPos()
     chunkCount = 0
     rv = []
-    aabb = new webglmc.AABB()
     chunkSize = CUBE_SIZE * @chunkSize
 
-    for key, chunk of @chunks
-      chunkCount++
-      [x, y, z] = parseKey key
-      vbo = this.getChunkVBO x, y, z
-      if !vbo
-        continue
+    [ccx, ccy, ccz] = this.chunkAtCameraPosition()
+    for x in [ccx - VIEW_DISTANCE_X..ccx + VIEW_DISTANCE_X]
+      for y in [ccy - VIEW_DISTANCE_Y..ccy + VIEW_DISTANCE_Y]
+        for z in [ccz - VIEW_DISTANCE_Z..ccz + VIEW_DISTANCE_Z]
+          vbo = this.getChunkVBO x, y, z
+          if !vbo
+            continue
 
-      # For some reason the frustum culling is broken so I just cull against
-      # larger objects.  Seems to do the trick.
-      aabb.vec1[0] = chunkSize * (x - 1)
-      aabb.vec1[1] = chunkSize * (y - 1)
-      aabb.vec1[2] = chunkSize * (z - 1)
-      vec3.add aabb.vec1, [chunkSize * 3, chunkSize * 3, chunkSize * 3], aabb.vec2
-      distance = vec3.subtract aabb.vec1, cameraPos
-
-      if !@frustumCulling || frustum.testAABB(aabb) >= 0
-        rv.push vbo: vbo, distance: vec3.norm2(distance)
+          distance = vec3.create [x - ccx, y - ccy, z - ccz]
+          rv.push vbo: vbo, distance: vec3.norm2 distance
 
     rv.sort (a, b) -> a.distance - b.distance
     dt = (Date.now() - start) / 1000
-    @displays.chunkStats.setText "chunks=#{chunkCount} visibleVBOs=#{
-        rv.length} chunkUpdate=#{dt}ms"
+    @displays.chunkStats.setText "visibleVBOs=#{rv.length} chunkUpdate=#{dt}ms"
 
     for info in rv
       callback info.vbo
@@ -254,9 +246,9 @@ class World
 
   requestMissingChunks: ->
     [x, y, z] = this.chunkAtCameraPosition()
-    for cx in [x - VIEW_DISTANCE_X..x + VIEW_DISTANCE_X]
-      for cy in [y - VIEW_DISTANCE_Y..y + VIEW_DISTANCE_Y]
-        for cz in [z - VIEW_DISTANCE_Z..z + VIEW_DISTANCE_Z]
+    for cx in [x - GENERATE_DISTANCE_X..x + GENERATE_DISTANCE_X]
+      for cy in [y - GENERATE_DISTANCE_Y..y + GENERATE_DISTANCE_Y]
+        for cz in [z - GENERATE_DISTANCE_Z..z + GENERATE_DISTANCE_Z]
           chunk = this.getChunk cx, cy, cz
           if !chunk
             this.requestChunk cx, cy, cz
@@ -366,10 +358,8 @@ class World
     maker.addSide side, rx, ry, rz, @selectionTexture
     vbo = maker.makeVBO()
 
-    gl.disable(gl.DEPTH_TEST)
-    @selectionTexture.bind()
-    vbo.draw()
-    gl.enable(gl.DEPTH_TEST)
+    webglmc.withContext [webglmc.disabledDepthTest, @shader, @selectionTexture], =>
+      vbo.draw()
 
     vbo.destroy()
 
@@ -381,18 +371,15 @@ class World
     gl.clearColor @fogColor...
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
-    @shader.use()
-
-    loc = @shader.getUniformLocation "uSunColor"
-    gl.uniform4fv loc, @sunColor if loc
-    loc = @shader.getUniformLocation "uSunDirection"
-    gl.uniform3fv loc, @sunDirection if loc
-    loc = @shader.getUniformLocation "uFogColor"
-    gl.uniform4fv loc, @fogColor if loc
-
-    @atlas.texture.bind()
-    this.iterVisibleVBOs (vbo) =>
-      vbo.draw()
+    webglmc.withContext [@shader, @atlas.texture], =>
+      loc = @shader.getUniformLocation "uSunColor"
+      gl.uniform4fv loc, @sunColor if loc
+      loc = @shader.getUniformLocation "uSunDirection"
+      gl.uniform3fv loc, @sunDirection if loc
+      loc = @shader.getUniformLocation "uFogColor"
+      gl.uniform4fv loc, @fogColor if loc
+      this.iterVisibleVBOs (vbo) =>
+        vbo.draw()
 
 
 public = self.webglmc ?= {}

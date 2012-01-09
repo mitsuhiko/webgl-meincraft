@@ -82,15 +82,17 @@ loadShader = (filename, callback) ->
     callback new Shader(source, filename)
 
 
-class Shader
+class Shader extends webglmc.ContextObject
+  @withStack 'shader'
+
   constructor: (source, filename = null) ->
     {gl} = webglmc.engine
 
     @prog = gl.createProgram()
-    vertexShader = shaderFromSource 'VERTEX_SHADER', source, filename
-    fragmentShader = shaderFromSource 'FRAGMENT_SHADER', source, filename
-    gl.attachShader @prog, vertexShader
-    gl.attachShader @prog, fragmentShader
+    @vertexShader = shaderFromSource 'VERTEX_SHADER', source, filename
+    @fragmentShader = shaderFromSource 'FRAGMENT_SHADER', source, filename
+    gl.attachShader @prog, @vertexShader
+    gl.attachShader @prog, @fragmentShader
     gl.linkProgram @prog
 
     @attribCache = {}
@@ -108,9 +110,17 @@ class Shader
   getAttribLocation: (name) ->
     @attribCache[name] ?= webglmc.engine.gl.getAttribLocation @prog, name
 
-  use: (useArrays = true) ->
-    webglmc.engine.currentShader = this
+  bind: ->
     webglmc.engine.gl.useProgram @prog
+
+  unbind: ->
+    webglmc.engine.gl.useProgram null
+
+  destroy: ->
+    {gl} = webglmc.engine
+    gl.destroyProgram @prog
+    gl.destroyShader @vertexShader
+    gl.destroyShader @fragmentShader
 
 
 public = self.webglmc ?= {}
