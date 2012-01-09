@@ -48,7 +48,7 @@ preprocessSource = (filename, source, sourceID, callback) ->
       shadersToInclude++
       do (insertLocation) ->
         loadShaderSource webglmc.joinFilename(filename, match[1]), (source) ->
-          lines[insertLocation] = source + '\n#line ' + (insertLocation - 1) +
+          lines[insertLocation] = source + '\n#line ' + insertLocation +
             ' ' + sourceID
           shadersToInclude--
           checkDone()
