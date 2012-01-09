@@ -124,9 +124,9 @@ class Engine
   mainloop: (iterate) ->
     lastTimestamp = Date.now()
     step = (timestamp) =>
-      dt = (timestamp - lastTimestamp) / 1000
+      dt = timestamp - lastTimestamp
       @frameTimeDisplay.setText dt + 'ms'
-      iterate dt
+      iterate dt / 1000
       lastTimestamp = timestamp
       requestAnimationFrame step
     requestAnimationFrame step

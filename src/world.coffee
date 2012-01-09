@@ -232,7 +232,7 @@ class World
           rv.push vbo: vbo, distance: vec3.norm2 distance
 
     rv.sort (a, b) -> a.distance - b.distance
-    dt = (Date.now() - start) / 1000
+    dt = Date.now() - start
     @displays.chunkStats.setText "visibleVBOs=#{rv.length} chunkUpdate=#{dt}ms"
 
     for info in rv
