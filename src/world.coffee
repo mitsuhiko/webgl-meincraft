@@ -175,8 +175,8 @@ class World
       
     addSide = (side) =>
       texture = this.getBlockTexture blockID
-      maker.addSide side, offX + cx * CUBE_SIZE, offY + cy * CUBE_SIZE,
-        offZ + cz * CUBE_SIZE, texture
+      maker.addSide side, (offX + cx) * CUBE_SIZE, (offY + cy) * CUBE_SIZE,
+        (offZ + cz) * CUBE_SIZE, texture
 
     for cz in [0...@chunkSize]
       for cy in [0...@chunkSize]
