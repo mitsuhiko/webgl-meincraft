@@ -368,7 +368,8 @@ class World
   draw: ->
     {gl} = webglmc.engine
 
-    gl.clearColor @fogColor...
+    # Can't use splat in Chrome for Float32Arrays
+    gl.clearColor @fogColor[0], @fogColor[1], @fogColor[2], @fogColor[3]
     gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
 
     webglmc.withContext [@shader, @atlas.texture], =>
