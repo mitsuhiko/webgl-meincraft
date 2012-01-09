@@ -30,7 +30,7 @@ class Game
     @processor = new webglmc.Processor webglmc.resmgr.resources['shaders/postprocess']
 
   initEventHandlers: ->
-    $('body')
+    $(window)
       .bind 'keydown', (event) =>
         this.onKeyDown event
       .bind 'keyup', (event) =>
@@ -91,6 +91,7 @@ class Game
   render: ->
     {gl} = webglmc.engine
 
+    webglmc.clear()
     @processor.push()
     @world.draw()
     if @currentSelection

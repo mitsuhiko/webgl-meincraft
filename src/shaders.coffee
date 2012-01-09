@@ -98,6 +98,11 @@ class Shader extends webglmc.ContextObject
     @attribCache = {}
     @uniformCache = {}
 
+    # This value is changed by the engine automatically.  It's used to find out
+    # if a shader has older values on the graphics device than are stored in
+    # the engine's uniform matrix stack.
+    @_uniformVersion = 0
+
     if !gl.getProgramParameter @prog, gl.LINK_STATUS
       log = gl.getProgramInfoLog @prog
       onShaderError 'PROGRAM', log, 'linking', filename
@@ -109,6 +114,38 @@ class Shader extends webglmc.ContextObject
 
   getAttribLocation: (name) ->
     @attribCache[name] ?= webglmc.engine.gl.getAttribLocation @prog, name
+
+  uniform1i: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniform1i loc, value if loc
+
+  uniform1f: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniform1f loc, value if loc
+
+  uniform2f: (name, value1, value2) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniform2f loc, value1, value2 if loc
+
+  uniform2fv: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniform2fv loc, value if loc
+
+  uniform3fv: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniform3fv loc, value if loc
+
+  uniform4fv: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniform4fv loc, value if loc
+
+  uniformMatrix3fv: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniformMatrix3fv loc, false, value if loc
+
+  uniformMatrix4fv: (name, value) ->
+    loc = this.getUniformLocation name
+    webglmc.engine.gl.uniformMatrix4fv loc, false, value if loc
 
   bind: ->
     webglmc.engine.gl.useProgram @prog

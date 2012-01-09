@@ -23,6 +23,13 @@ makeGLContext = (canvas, debug, options) ->
   ctx
 
 
+clear = (color = webglmc.floatColorFromHex '#ffffff') ->
+  {gl} = webglmc.engine
+  # No splats because of chrome bug
+  gl.clearColor color[0], color[1], color[2], color[3]
+  gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
+
+
 class Engine
   constructor: (canvas, debug = false) ->
     @debug = debug
@@ -50,6 +57,7 @@ class Engine
     @model = new MatrixStack
     @view = new MatrixStack
     @projection = new MatrixStack
+    @_uniformVersion = 0
     this.markMVPDirty()
 
     console.debug 'Render canvas =', @canvas
@@ -64,7 +72,7 @@ class Engine
       @throbber.fadeOut()
 
   markMVPDirty: ->
-    @_deviceUniformDirty = true
+    @_uniformVersion++
     @_frustum = null
     @_mvp = null
     @_modelView = null
@@ -99,26 +107,19 @@ class Engine
     vec3.create [-@view.top[2], -@view.top[6], -@view.top[10]]
 
   flushUniforms: ->
-    if !@_deviceUniformDirty
+    shader = webglmc.Shader.top()
+    if shader._uniformVersion == @_uniformVersion
       return
 
-    prog = webglmc.Shader.top()
-    loc = prog.getUniformLocation "uViewportSize"
-    @gl.uniform2f loc, @width, @height if loc
-    loc = prog.getUniformLocation "uModelMatrix"
-    @gl.uniformMatrix4fv loc, false, @model.top if loc
-    loc = prog.getUniformLocation "uViewMatrix"
-    @gl.uniformMatrix4fv loc, false, @view.top if loc
-    loc = prog.getUniformLocation "uModelViewMatrix"
-    @gl.uniformMatrix4fv loc, false, this.getModelView() if loc
-    loc = prog.getUniformLocation "uProjectionMatrix"
-    @gl.uniformMatrix4fv loc, false, @projection.top if loc
-    loc = prog.getUniformLocation "uModelViewProjectionMatrix"
-    @gl.uniformMatrix4fv loc, false, this.getModelViewProjection() if loc
-    loc = prog.getUniformLocation "uNormalMatrix"
-    @gl.uniformMatrix3fv loc, false, this.getNormal() if loc
+    shader.uniform2f "uViewportSize", @width, @height
+    shader.uniformMatrix4fv "uModelMatrix", @model.top
+    shader.uniformMatrix4fv "uViewMatrix", @view.top
+    shader.uniformMatrix4fv "uModelViewMatrix", this.getModelView()
+    shader.uniformMatrix4fv "uProjectionMatrix", @projection.top
+    shader.uniformMatrix4fv "uModelViewProjectionMatrix", this.getModelViewProjection()
+    shader.uniformMatrix3fv "uNormalMatrix", this.getNormal()
 
-    @_deviceUniformDirty = false
+    shader._uniformVersion = @_uniformVersion
 
   mainloop: (iterate) ->
     lastTimestamp = Date.now()
@@ -174,3 +175,4 @@ class MatrixStack
 
 public = self.webglmc ?= {}
 public.Engine = Engine
+public.clear = clear

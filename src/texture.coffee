@@ -57,9 +57,7 @@ class Texture extends webglmc.ContextObject
     gl.bindTexture gl.TEXTURE_2D, @id
     shader = webglmc.Shader.top()
     if shader
-      loc = shader.getUniformLocation "uTexture"
-      if loc >= 0
-        gl.uniform1i loc, 0
+      shader.uniform1i "uTexture", 0
 
   unbind: ->
     {gl} = webglmc.engine

@@ -368,17 +368,11 @@ class World
   draw: ->
     {gl} = webglmc.engine
 
-    # Can't use splat in Chrome for Float32Arrays
-    gl.clearColor @fogColor[0], @fogColor[1], @fogColor[2], @fogColor[3]
-    gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
-
+    webglmc.clear @fogColor
     webglmc.withContext [@shader, @atlas.texture], =>
-      loc = @shader.getUniformLocation "uSunColor"
-      gl.uniform4fv loc, @sunColor if loc
-      loc = @shader.getUniformLocation "uSunDirection"
-      gl.uniform3fv loc, @sunDirection if loc
-      loc = @shader.getUniformLocation "uFogColor"
-      gl.uniform4fv loc, @fogColor if loc
+      @shader.uniform4fv "uSunColor", @sunColor
+      @shader.uniform3fv "uSunDirection", @sunDirection
+      @shader.uniform4fv "uFogColor", @fogColor
       this.iterVisibleVBOs (vbo) =>
         vbo.draw()
 
