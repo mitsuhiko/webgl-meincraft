@@ -93,8 +93,8 @@ class World
     @shader = webglmc.resmgr.resources['shaders/block']
     @sunColor = webglmc.floatColorFromHex '#F2F3DC'
     @sunDirection = vec3.create [0.7, 0.8, 1.0]
-    @fogColor = webglmc.floatColorFromHex '#CEEBC0'
-    @fogDensity = 0.01
+    @fogColor = webglmc.floatColorFromHex '#EDF0F0'
+    @fogDensity = 0.012
 
     @displays =
       chunkStats: webglmc.debugPanel.addDisplay 'Chunk stats'
