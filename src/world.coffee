@@ -87,7 +87,7 @@ class World
     @seed = seed
     @generator = new webglmc.WorldGenerator this
     @chunkSize = CHUNK_SIZE
-    @vboBuildTheshold = +webglmc.getRuntimeParameter 'vboBuildTheshold', 40
+    @vboBuildThreshold = +webglmc.getRuntimeParameter 'vboBuildThreshold', 40
     @chunks = {}
     @cachedVBOs = {}
     @dirtyVBOs = {}
@@ -205,7 +205,7 @@ class World
     if !chunk
       return null
     vbo = @cachedVBOs[key]
-    if (!vbo || @dirtyVBOs[key]) && this.generatingChunks < @vboBuildTheshold
+    if (!vbo || @dirtyVBOs[key]) && this.generatingChunks < @vboBuildThreshold
       vbo.destroy() if vbo
       vbo = this.updateVBO x, y, z
       delete @dirtyVBOs[key]
