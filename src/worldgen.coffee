@@ -182,7 +182,7 @@ class WorldGenerator
       chunkSize:  @world.chunkSize
 
   processGeneratedChunk: (x, y, z, chunk) ->
-    @world.setChunk x, y, z, chunk
+    @world.setRequestedChunk x, y, z, chunk
 
 
 public = self.webglmc ?= {}

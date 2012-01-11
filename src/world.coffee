@@ -87,9 +87,11 @@ class World
     @seed = seed
     @generator = new webglmc.WorldGenerator this
     @chunkSize = CHUNK_SIZE
+    @vboBuildTheshold = +webglmc.getRuntimeParameter 'vboBuildTheshold', 40
     @chunks = {}
     @cachedVBOs = {}
     @dirtyVBOs = {}
+    @generatingChunks = 0
     @shader = webglmc.resmgr.resources['shaders/block']
     @sunColor = webglmc.floatColorFromHex '#F2F3DC'
     @sunDirection = vec3.create [0.7, 0.8, 1.0]
@@ -102,31 +104,30 @@ class World
     @atlas = makeBlockAtlas()
     @selectionTexture = webglmc.resmgr.resources.selection
 
-  getBlockTexture: (blockID) ->
-    @atlas.slices[blockID]
-
   getBlock: (x, y, z) ->
-    cx = div x, @chunkSize
-    cy = div y, @chunkSize
-    cz = div z, @chunkSize
+    {chunkSize} = this
+    cx = div x, chunkSize
+    cy = div y, chunkSize
+    cz = div z, chunkSize
     chunk = this.getChunk cx, cy, cz
     if !chunk?
       return 0
-    inX = mod x, @chunkSize
-    inY = mod y, @chunkSize
-    inZ = mod z, @chunkSize
-    chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
+    inX = mod x, chunkSize
+    inY = mod y, chunkSize
+    inZ = mod z, chunkSize
+    chunk[inX + inY * chunkSize + inZ * chunkSize * chunkSize]
 
   setBlock: (x, y, z, type) ->
-    cx = div x, @chunkSize
-    cy = div y, @chunkSize
-    cz = div z, @chunkSize
+    {chunkSize} = this
+    cx = div x, chunkSize
+    cy = div y, chunkSize
+    cz = div z, chunkSize
     chunk = this.getChunk cx, cy, cz, true
-    inX = mod x, @chunkSize
-    inY = mod y, @chunkSize
-    inZ = mod z, @chunkSize
-    oldType = chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize]
-    chunk[inX + inY * @chunkSize + inZ * @chunkSize * @chunkSize] = type
+    inX = mod x, chunkSize
+    inY = mod y, chunkSize
+    inZ = mod z, chunkSize
+    oldType = chunk[inX + inY * chunkSize + inZ * chunkSize * chunkSize]
+    chunk[inX + inY * chunkSize + inZ * chunkSize * chunkSize] = type
 
     this.markVBODirty cx, cy, cz
 
@@ -160,29 +161,28 @@ class World
 
   updateVBO: (x, y, z) ->
     chunk = this.getChunk x, y, z
-    if !chunk
-      return null
     maker = new webglmc.CubeMaker CUBE_SIZE
-
-    offX = x * @chunkSize
-    offY = y * @chunkSize
-    offZ = z * @chunkSize
+    
+    {chunkSize} = this
+    blockTextures = @atlas.slices
+    offX = x * chunkSize
+    offY = y * chunkSize
+    offZ = z * chunkSize
 
     isAir = (cx, cy, cz) =>
       if cx >= 0 && cy >= 0 && cz >= 0 &&
-         cx < @chunkSize && cy < @chunkSize && cz < @chunkSize
-        return chunk[cx + cy * @chunkSize + cz * @chunkSize * @chunkSize] == 0
+         cx < chunkSize && cy < chunkSize && cz < chunkSize
+        return chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] == 0
       return this.getBlock(offX + cx, offY + cy, offZ + cz) == 0
       
     addSide = (side) =>
-      texture = this.getBlockTexture blockID
       maker.addSide side, (offX + cx) * CUBE_SIZE, (offY + cy) * CUBE_SIZE,
-        (offZ + cz) * CUBE_SIZE, texture
+        (offZ + cz) * CUBE_SIZE, blockTextures[blockID]
 
-    for cz in [0...@chunkSize]
-      for cy in [0...@chunkSize]
-        for cx in [0...@chunkSize]
-          blockID = chunk[cx + cy * @chunkSize + cz * @chunkSize * @chunkSize]
+    for cz in [0...chunkSize]
+      for cy in [0...chunkSize]
+        for cx in [0...chunkSize]
+          blockID = chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize]
           if blockID == 0
             continue
           if isAir cx - 1, cy, cz then addSide 'left'
@@ -205,17 +205,14 @@ class World
     if !chunk
       return null
     vbo = @cachedVBOs[key]
-    if !vbo || @dirtyVBOs[key]
-      if vbo
-        vbo.destroy()
+    if (!vbo || @dirtyVBOs[key]) && this.generatingChunks < @vboBuildTheshold
+      vbo.destroy() if vbo
       vbo = this.updateVBO x, y, z
       delete @dirtyVBOs[key]
-      if vbo
-        @cachedVBOs[key] = vbo
+      @cachedVBOs[key] = vbo
     vbo
 
   iterVisibleVBOs: (callback) ->
-    start = Date.now()
     cameraPos = webglmc.engine.getCameraPos()
     chunkCount = 0
     rv = []
@@ -233,8 +230,8 @@ class World
           rv.push vbo: vbo, distance: vec3.norm2 distance
 
     rv.sort (a, b) -> a.distance - b.distance
-    dt = Date.now() - start
-    @displays.chunkStats.setText "visibleVBOs=#{rv.length} chunkUpdate=#{dt}ms"
+    @displays.chunkStats.setText "visibleVBOs=#{rv.length
+      } generatingChunks=#{@generatingChunks}"
 
     for info in rv
       callback info.vbo
@@ -258,7 +255,12 @@ class World
     # ensure chunk exists so that we don't request chunks
     # multiple times in requestMissingChunks
     this.getChunk x, y, z, true
+    @generatingChunks++
     @generator.generateChunk x, y, z
+
+  setRequestedChunk: (x, y, z, chunk) ->
+    @generatingChunks--
+    this.setChunk x, y, z, chunk
 
   iterChunksAroundCamera: (range, callback) ->
     if range == null
