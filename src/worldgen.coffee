@@ -1,10 +1,40 @@
-mod = (x, y) ->
-  (x % y + y) % y
+NOTHING = 0
+FLYING_ROCK = 1
+GROUND = 2
+
+
+class GeneratorState
+
+  constructor: (chunkSize) ->
+    @chunkSize = chunkSize
+    @cacheSizeX = @chunkSize
+    @cacheSizeY = @chunkSize + 1
+    @cacheSizeZ = @chunkSize
+    @blockSourceCache = new Uint8Array @cacheSizeX * @cacheSizeY * @cacheSizeZ
+
+  init: (gen, offX, offY, offZ) ->
+    {cacheSizeX, cacheSizeY, cacheSizeZ} = this
+
+    @offX = offX
+    @offY = offY
+    @offZ = offZ
+
+    sc = @blockSourceCache
+    for cz in [0...cacheSizeZ]
+      for cy in [0...cacheSizeY]
+        for cx in [0...cacheSizeX]
+          source = gen.getBlockSource offX + cx, offY + cy, offZ + cz
+          sc[cx + cy * cacheSizeX + cz * cacheSizeX * cacheSizeY] = source
+
+  getBlockSource: (cx, cy, cz) ->
+    @blockSourceCache[cx + cy * @cacheSizeX + cz * @cacheSizeX * @cacheSizeY]
 
 
 class WorldGeneratorProcess extends webglmc.Process
   constructor: (seed) ->
     @perlin = new webglmc.PerlinGenerator seed
+    @cachedState = null
+    @cachedChunk = null
     @waterLevel = 16
 
   isFlyingRock: (x, y, z) ->
@@ -13,9 +43,9 @@ class WorldGeneratorProcess extends webglmc.Process
     nz = z * 0.01
     heightOff = @perlin.simpleNoise2D(nx * 3.0, nz * 3.0) * 0.2
 
-    mx = mod nx, 1.0
-    my = mod ny + heightOff, 1.4
-    mz = mod nz, 1.0
+    mx = (nx % 1.0 + 1.0) % 1.0
+    my = ((ny + heightOff) % 1.4 + 1.4) % 1.4
+    mz = (nz % 1.0 + 1.0) % 1.0
 
     # falloff from the top
     if my > 0.9
@@ -35,17 +65,11 @@ class WorldGeneratorProcess extends webglmc.Process
     density = noise * centerFalloff * plateauFalloff
     density > 0.1
 
-  isGroundBlock: (x, y, z) ->
-    return y < this.getGroundHeight x, z
-
   getGroundHeight: (x, z) ->
     nx = x * 0.01
     nz = z * 0.01
     noise = @perlin.noise2D(nx, nz, 3) * 0.5 + 0.5
     noise * 30
-
-  isWater: (x, y, z) ->
-    y <= @waterLevel
 
   getGrassVariation: (x, y, z) ->
     nx = x * 1.2
@@ -56,57 +80,80 @@ class WorldGeneratorProcess extends webglmc.Process
     webglmc.BLOCK_TYPES["grass0#{variation}"]
 
   getRockVariation: (x, y, z) ->
-    blockTypes = webglmc.BLOCK_TYPES
     nx = 0.3 + x * 1.1
     ny = 0.4 + y * 1.1
     nz = 0.5 + z * 1.05
     noise = @perlin.simpleNoise3D(nx, ny, nz) * 0.5 + 0.5
     noise = Math.floor(noise * 3)
     if noise > 0.4
-      return blockTypes.rock01
-    return blockTypes.rock02
+      return webglmc.BLOCK_TYPES.rock01
+    return webglmc.BLOCK_TYPES.rock02
 
-  getBlock: (x, y, z) ->
-    blockTypes = webglmc.BLOCK_TYPES
-
-    # Deep below
-    if y < -20
-      return blockTypes.granite
-
+  getBlockSource: (x, y, z) ->
     # Ground level blocks
-    if this.isGroundBlock x, y, z
-      if @waterLevel - 1 <= y <= @waterLevel + 1
-        return blockTypes.sand
-      else if y < @waterLevel
-        return blockTypes.stone
-      return this.getGrassVariation x, y, z
+    if y < this.getGroundHeight x, z
+      return GROUND
 
     # Flying rocks
     if this.isFlyingRock x, y, z
-      if y <= @waterLevel + 1
-        return blockTypes.stone
-      if !this.isFlyingRock x, y + 1, z
+      return FLYING_ROCK
+
+    NOTHING
+
+  getBlock: (state, cx, cy, cz) ->
+    x = state.offX + cx
+    y = state.offY + cy
+    z = state.offZ + cz
+    blockSource = state.getBlockSource cx, cy, cz
+
+    if !blockSource
+      if y < @waterLevel
+        return webglmc.BLOCK_TYPES.water
+      return webglmc.BLOCK_TYPES.air
+
+    if blockSource == FLYING_ROCK
+      if !state.getBlockSource cx, cy + 1, cz
         return this.getGrassVariation x, y, z
       return this.getRockVariation x, y, z
 
-    # Water level
-    if this.isWater x, y, z
-      return blockTypes.water
+    if blockSource == GROUND
+      if y < @waterLevel - 4
+        return webglmc.BLOCK_TYPES.stone
+      if @waterLevel - 1 <= y <= @waterLevel + 1
+        return webglmc.BLOCK_TYPES.sand
 
-    blockTypes.air
+    return this.getGrassVariation x, y, z
+
+  getGeneratorState: (offX, offY, offZ, chunkSize) ->
+    if !@cachedState || @cachedState.chunkSize != chunkSize
+      @cachedState = new GeneratorState chunkSize
+    @cachedState.init this, offX, offY, offZ
+    @cachedState
+
+  getChunkArray: (chunkSize) ->
+    dim = chunkSize * chunkSize * chunkSize
+    if !@cachedChunk || @cachedChunk.length != dim
+      @cachedChunk = new Uint8Array dim
+    @cachedChunk
 
   generateChunk: (def) ->
     {chunkSize, x, y, z} = def
 
-    chunk = new Array chunkSize * chunkSize * chunkSize
     offX = x * chunkSize
     offY = y * chunkSize
     offZ = z * chunkSize
 
+    # Since generateChunk is not reentrant and JavaScript does not
+    # support multithreading we can savely keep them around.  These
+    # functions will cache them in the background so that we do not
+    # need any memory allocations during world generation
+    state = this.getGeneratorState offX, offY, offZ, chunkSize
+    chunk = this.getChunkArray chunkSize
+
     for cz in [0...chunkSize]
       for cy in [0...chunkSize]
         for cx in [0...chunkSize]
-          blockID = this.getBlock offX + cx, offY + cy, offZ + cz
+          blockID = this.getBlock state, cx, cy, cz
           chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] = blockID
 
     this.notifyParent x: x, y: y, z: z, chunk: chunk
