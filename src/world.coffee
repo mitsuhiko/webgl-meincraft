@@ -179,9 +179,9 @@ class World
       maker.addSide side, (offX + cx) * CUBE_SIZE, (offY + cy) * CUBE_SIZE,
         (offZ + cz) * CUBE_SIZE, blockTextures[blockID]
 
-    for cz in [0...chunkSize]
-      for cy in [0...chunkSize]
-        for cx in [0...chunkSize]
+    for cz in [0...chunkSize] by 1
+      for cy in [0...chunkSize] by 1
+        for cx in [0...chunkSize] by 1
           blockID = chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize]
           if blockID == 0
             continue
@@ -219,9 +219,9 @@ class World
     chunkSize = CUBE_SIZE * @chunkSize
 
     [ccx, ccy, ccz] = this.chunkAtCameraPosition()
-    for x in [ccx - VIEW_DISTANCE_X..ccx + VIEW_DISTANCE_X]
-      for y in [ccy - VIEW_DISTANCE_Y..ccy + VIEW_DISTANCE_Y]
-        for z in [ccz - VIEW_DISTANCE_Z..ccz + VIEW_DISTANCE_Z]
+    for x in [ccx - VIEW_DISTANCE_X..ccx + VIEW_DISTANCE_X] by 1
+      for y in [ccy - VIEW_DISTANCE_Y..ccy + VIEW_DISTANCE_Y] by 1
+        for z in [ccz - VIEW_DISTANCE_Z..ccz + VIEW_DISTANCE_Z] by 1
           vbo = this.getChunkVBO x, y, z
           if !vbo
             continue
@@ -244,9 +244,9 @@ class World
 
   requestMissingChunks: ->
     [x, y, z] = this.chunkAtCameraPosition()
-    for cx in [x - GENERATE_DISTANCE_X..x + GENERATE_DISTANCE_X]
-      for cy in [y - GENERATE_DISTANCE_Y..y + GENERATE_DISTANCE_Y]
-        for cz in [z - GENERATE_DISTANCE_Z..z + GENERATE_DISTANCE_Z]
+    for cx in [x - GENERATE_DISTANCE_X..x + GENERATE_DISTANCE_X] by 1
+      for cy in [y - GENERATE_DISTANCE_Y..y + GENERATE_DISTANCE_Y] by 1
+        for cz in [z - GENERATE_DISTANCE_Z..z + GENERATE_DISTANCE_Z] by 1
           chunk = this.getChunk cx, cy, cz
           if !chunk
             this.requestChunk cx, cy, cz

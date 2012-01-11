@@ -20,9 +20,9 @@ class GeneratorState
     @offZ = offZ
 
     sc = @blockSourceCache
-    for cz in [0...cacheSizeZ]
-      for cy in [0...cacheSizeY]
-        for cx in [0...cacheSizeX]
+    for cz in [0...cacheSizeZ] by 1
+      for cy in [0...cacheSizeY] by 1
+        for cx in [0...cacheSizeX] by 1
           source = gen.getBlockSource offX + cx, offY + cy, offZ + cz
           sc[cx + cy * cacheSizeX + cz * cacheSizeX * cacheSizeY] = source
 
@@ -150,9 +150,9 @@ class WorldGeneratorProcess extends webglmc.Process
     state = this.getGeneratorState offX, offY, offZ, chunkSize
     chunk = this.getChunkArray chunkSize
 
-    for cz in [0...chunkSize]
-      for cy in [0...chunkSize]
-        for cx in [0...chunkSize]
+    for cz in [0...chunkSize] by 1
+      for cy in [0...chunkSize] by 1
+        for cx in [0...chunkSize] by 1
           blockID = this.getBlock state, cx, cy, cz
           chunk[cx + cy * chunkSize + cz * chunkSize * chunkSize] = blockID
 
