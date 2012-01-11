@@ -18,23 +18,23 @@ defaultPermutationTable = [
   67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
 ]
 
-gradientVectors = [
-  [ 1.0,  1.0,  0.0]
-  [-1.0,  1.0,  0.0]
-  [ 1.0, -1.0,  0.0]
-  [-1.0, -1.0,  0.0]
-  [ 1.0,  0.0,  1.0]
-  [-1.0,  0.0,  1.0]
-  [ 1.0,  0.0, -1.0]
-  [-1.0,  0.0, -1.0]
-  [ 0.0,  1.0,  1.0]
-  [ 0.0, -1.0,  1.0]
-  [ 0.0,  1.0, -1.0]
-  [ 0.0, -1.0, -1.0]
-  [ 1.0,  1.0,  0.0]
-  [ 0.0, -1.0,  1.0]
-  [-1.0,  1.0,  0.0]
-  [ 0.0, -1.0, -1.0]
+gradientVectors = new Int8Array [
+   1.0,  1.0,  0.0
+  -1.0,  1.0,  0.0
+   1.0, -1.0,  0.0
+  -1.0, -1.0,  0.0
+   1.0,  0.0,  1.0
+  -1.0,  0.0,  1.0
+   1.0,  0.0, -1.0
+  -1.0,  0.0, -1.0
+   0.0,  1.0,  1.0
+   0.0, -1.0,  1.0
+   0.0,  1.0, -1.0
+   0.0, -1.0, -1.0
+   1.0,  1.0,  0.0
+   0.0, -1.0,  1.0
+  -1.0,  1.0,  0.0
+   0.0, -1.0, -1.0
 ]
 
 F2 = (0.5 * (Math.sqrt(3.0) - 1.0))
@@ -52,9 +52,6 @@ fastRandom = (seed) ->
     u = 18000 * (u & 65535) + (u >> 16)
     ((v << 16) + u) / RAND_MAX
 
-mod = (x, y) ->
-  (x % y + y) % y
-
 
 randomizeTable = (table, seed) ->
   random = fastRandom seed
@@ -66,19 +63,15 @@ randomizeTable = (table, seed) ->
 class PerlinGenerator
   constructor: (seed) ->
     @seed = parseInt seed
-    @permutationTable = Array::concat defaultPermutationTable
+    @permutationTable = new Uint8Array defaultPermutationTable
     @period = @permutationTable.length
     randomizeTable @permutationTable, @seed
 
   simpleNoise2D: (x, y) ->
     noise = 0.0
-
-    pt = (i) => @permutationTable[i % @period]
-    admix = (x, y, g) ->
-      tt = 0.5 - Math.pow(x, 2.0) - Math.pow(y, 2.0)
-      if tt > 0.0 && !isNaN g
-        gvec = gradientVectors[g]
-        noise += Math.pow(tt, 4.0) * (gvec[0] * x + gvec[1] * y)
+    pt = @permutationTable
+    gv = gradientVectors
+    p = @period
 
     s = (x + y) * F2
     i = Math.floor(x + s)
@@ -96,27 +89,36 @@ class PerlinGenerator
     y1 = y0 - j1 + G2
     x2 = x0 + G2 * 2.0 - 1.0
     y2 = y0 + G2 * 2.0 - 1.0
-    ii = mod i, @period
-    jj = mod j, @period
-    gi0 = mod pt(ii + pt(jj)), 12
-    gi1 = mod pt(ii + i1 + pt(jj + j1)), 12
-    gi2 = mod pt(ii + 1 + pt(jj + 1)), 12
+    ii = (i % p + p) % p
+    jj = (j % p + p) % p
+    gi0 = pt[(ii + pt[jj % p]) % p] % 12
+    gi1 = pt[(ii + i1 + pt[(jj + j1) % p]) % p] % 12
+    gi2 = pt[(ii + 1 + pt[(jj + 1) % p]) % p] % 12
 
-    admix x0, y0, gi0
-    admix x1, y1, gi1
-    admix x2, y2, gi2
+    tt = 0.5 - x0 * x0 - y0 * y0
+    if tt > 0.0
+      gv0 = gv[gi0 * 3]
+      gv1 = gv[gi0 * 3 + 1]
+      noise += tt * tt * tt * tt * (gv0 * x0 + gv1 * y0)
+    tt = 0.5 - x1 * x1 - y1 * y1
+    if tt > 0.0
+      gv0 = gv[gi1 * 3]
+      gv1 = gv[gi1 * 3 + 1]
+      noise += tt * tt * tt * tt * (gv0 * x1 + gv1 * y1)
+    tt = 0.5 - x2 * x2 - y2 * y2
+    if tt > 0.0
+      gv0 = gv[gi2 * 3]
+      gv1 = gv[gi2 * 3 + 1]
+      noise += tt * tt * tt * tt * (gv0 * x2 + gv1 * y2)
 
     noise * 70.0
 
   simpleNoise3D: (x, y, z) ->
     noise = 0.0
 
-    pt = (i) => @permutationTable[i % @period]
-    admix = (x, y, z, g) ->
-      tt = 0.6 - Math.pow(x, 2.0) - Math.pow(y, 2.0) - Math.pow(z, 2.0)
-      if tt > 0.0 && !isNaN g
-        gvec = gradientVectors[g]
-        noise += Math.pow(tt, 4.0) * (gvec[0] * x + gvec[1] * y + gvec[2] * z)
+    pt = @permutationTable
+    gv = gradientVectors
+    p = @period
 
     s = (x + y + z) * F3
     i = Math.floor x + s
@@ -151,18 +153,39 @@ class PerlinGenerator
     x3 = x0 - 1.0 + 3.0 * G3
     y3 = y0 - 1.0 + 3.0 * G3
     z3 = z0 - 1.0 + 3.0 * G3
-    ii = mod i, @period
-    jj = mod j, @period
-    kk = mod k, @period
-    gi0 = pt(ii + pt(jj + pt(kk))) % 12
-    gi1 = pt(ii + i1 + pt(jj + j1 + pt(kk + k1))) % 12
-    gi2 = pt(ii + i2 + pt(jj + j2 + pt(kk + k2))) % 12
-    gi3 = pt(ii + 1 + pt(jj + 1 + pt(kk + 1))) % 12
+    ii = (i % p + p) % p
+    jj = (j % p + p) % p
+    kk = (k % p + p) % p
 
-    admix x0, y0, z0, gi0
-    admix x1, y1, z1, gi1
-    admix x2, y2, z2, gi2
-    admix x3, y3, z3, gi3
+    gi0 = pt[(ii + pt[(jj + pt[kk % p]) % p]) % p] % 12
+    gi1 = pt[(ii + i1 + pt[(jj + j1 + pt[(kk + k1) % p]) % p]) % p] % 12
+    gi2 = pt[(ii + i2 + pt[(jj + j2 + pt[(kk + k2) % p]) % p]) % p] % 12
+    gi3 = pt[(ii + 1 + pt[(jj + 1 + pt[(kk + 1) % p]) % p]) % p] % 12
+
+    tt = 0.6 - x0 * x0 - y0 * y0 - z0 * z0
+    if tt > 0.0
+      gv0 = gv[gi0 * 3]
+      gv1 = gv[gi0 * 3 + 1]
+      gv2 = gv[gi0 * 3 + 2]
+      noise += tt * tt * tt * tt * (gv0 * x0 + gv1 * y0 + gv2 * z0)
+    tt = 0.6 - x1 * x1 - y1 * y1 - z1 * z1
+    if tt > 0.0
+      gv0 = gv[gi1 * 3]
+      gv1 = gv[gi1 * 3 + 1]
+      gv2 = gv[gi1 * 3 + 2]
+      noise += tt * tt * tt * tt * (gv0 * x1 + gv1 * y1 + gv2 * z1)
+    tt = 0.6 - x2 * x2 - y2 * y2 - z2 * z2
+    if tt > 0.0
+      gv0 = gv[gi2 * 3]
+      gv1 = gv[gi2 * 3 + 1]
+      gv2 = gv[gi2 * 3 + 2]
+      noise += tt * tt * tt * tt * (gv0 * x2 + gv1 * y2 + gv2 * z2)
+    tt = 0.6 - x3 * x3 - y3 * y3 - z3 * z3
+    if tt > 0.0
+      gv0 = gv[gi3 * 3]
+      gv1 = gv[gi3 * 3 + 1]
+      gv2 = gv[gi3 * 3 + 2]
+      noise += tt * tt * tt * tt * (gv0 * x3 + gv1 * y3 + gv2 * z3)
 
     noise * 32.0
 
@@ -170,9 +193,11 @@ class PerlinGenerator
     total = 0.0
     freq = 1.0
 
-    for i in [0...octaves]
+    i = 0
+    while i < octaves
       total += this.simpleNoise2D(x * freq, y * freq) / freq
       freq *= 2.0
+      i++
 
     total
 
@@ -180,9 +205,11 @@ class PerlinGenerator
     total = 0.0
     freq = 1.0
 
-    for i in [0...octaves]
+    i = 0
+    while i < octaves
       total += this.simpleNoise3D(x * freq, y * freq, z * freq) / freq
       freq *= 2.0
+      i++
 
     total
 

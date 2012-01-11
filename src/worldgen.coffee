@@ -26,11 +26,10 @@ class WorldGeneratorProcess extends webglmc.Process
       plateauFalloff = 1.0
 
     # falloff from the center
-    centerFalloff = 0.1 / (
-      Math.pow((mx - 0.5) * 1.5, 2.0) +
-      Math.pow((my - 1.0) * 0.8, 2.0) +
-      Math.pow((mz - 0.5) * 1.5, 2.0)
-    )
+    a = (mx - 0.5) * 1.5
+    b = (my - 1.0) * 0.8
+    c = (mz - 0.5) * 1.5
+    centerFalloff = 0.1 / (a * a + b * b + c * c)
 
     noise = @perlin.noise3D nx, ny * 0.5, nz, 4
     density = noise * centerFalloff * plateauFalloff
@@ -99,7 +98,7 @@ class WorldGeneratorProcess extends webglmc.Process
   generateChunk: (def) ->
     {chunkSize, x, y, z} = def
 
-    chunk = new Array(Math.pow(chunkSize, 3))
+    chunk = new Array chunkSize * chunkSize * chunkSize
     offX = x * chunkSize
     offY = y * chunkSize
     offZ = z * chunkSize
