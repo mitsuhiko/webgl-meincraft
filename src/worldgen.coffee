@@ -32,6 +32,7 @@ class GeneratorState
 
 class WorldGeneratorProcess extends webglmc.Process
   constructor: (seed) ->
+    super()
     @perlin = new webglmc.PerlinGenerator seed
     @cachedState = null
     @cachedChunk = null

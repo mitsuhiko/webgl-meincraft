@@ -47,6 +47,7 @@ class GLFlagContextObject extends ContextObject
   @withStack 'gl_flags'
 
   constructor: (funcs) ->
+    super()
     this.bind = funcs.bind
     this.unbind = funcs.unbind
 

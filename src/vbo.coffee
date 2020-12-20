@@ -47,6 +47,7 @@ class VertexBufferObject extends webglmc.ContextObject
   @withStack 'vbo'
 
   constructor: (drawMode, count, options = {}) ->
+    super()
     @drawMode = webglmc.engine.gl[drawMode]
     @count = count
     @interleaved = options.interleaved ? true

@@ -16,6 +16,7 @@ class Processor extends webglmc.ContextObject
   @withStack 'processor'
 
   constructor: (shader, fbo = null) ->
+    super()
     @shader = shader
     if fbo
       @fbo = fbo

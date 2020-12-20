@@ -10,6 +10,7 @@ class RenderBufferObject extends webglmc.ContextObject
 
   constructor: (width, height, format) ->
     {gl} = webglmc.engine
+    super()
     @format = gl[format]
     @id = gl.createRenderbuffer()
     this.push()
@@ -33,6 +34,7 @@ class FrameBufferObject extends webglmc.ContextObject
 
   constructor: (width, height, options = {}) ->
     {gl} = webglmc.engine
+    super()
     @width = width ? webglmc.engine.width
     @height = height ? webglmc.engine.height
     @id = gl.createFramebuffer()
