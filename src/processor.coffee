@@ -16,6 +16,7 @@ class Processor extends webglmc.ContextObject
   @withStack 'processor'
 
   constructor: (shader, fbo = null) ->
+    super()
     @shader = shader
     if fbo
       @fbo = fbo
@@ -47,5 +48,5 @@ class Processor extends webglmc.ContextObject
     @shader.pop()
 
 
-public = self.webglmc ?= {}
-public.Processor = Processor
+publicInterface = self.webglmc ?= {}
+publicInterface.Processor = Processor

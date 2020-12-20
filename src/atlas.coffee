@@ -90,5 +90,5 @@ class AtlasBuilder
     new Atlas texture, slices
 
 
-public = self.webglmc ?= {}
-public.AtlasBuilder = AtlasBuilder
+publicInterface = self.webglmc ?= {}
+publicInterface.AtlasBuilder = AtlasBuilder

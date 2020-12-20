@@ -32,6 +32,7 @@ class GeneratorState
 
 class WorldGeneratorProcess extends webglmc.Process
   constructor: (seed) ->
+    super()
     @perlin = new webglmc.PerlinGenerator seed
     @cachedState = null
     @cachedChunk = null
@@ -185,6 +186,6 @@ class WorldGenerator
     @world.setRequestedChunk x, y, z, chunk
 
 
-public = self.webglmc ?= {}
-public.WorldGenerator = WorldGenerator
-public.WorldGeneratorProcess = WorldGeneratorProcess
+publicInterface = self.webglmc ?= {}
+publicInterface.WorldGenerator = WorldGenerator
+publicInterface.WorldGeneratorProcess = WorldGeneratorProcess

@@ -106,10 +106,10 @@ class ProcessManager
     this.updateDisplay()
 
 
-public = self.webglmc ?= {}
-public.Process = Process
-public.ProcessManager = ProcessManager
-public.startProcess = startProcess
+publicInterface = self.webglmc ?= {}
+publicInterface.Process = Process
+publicInterface.ProcessManager = ProcessManager
+publicInterface.startProcess = startProcess
 
 
 if startWorkerSupport

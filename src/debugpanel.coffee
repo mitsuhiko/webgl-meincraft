@@ -47,7 +47,7 @@ bench = (benchName, callback) ->
   display.setText "#{(Date.now() - now) / 1000}ms"
 
 
-public = self.webglmc ?= {}
-public.DebugPanel = DebugPanel
-public.getRuntimeParameter = getRuntimeParameter
-public.bench = bench
+publicInterface = self.webglmc ?= {}
+publicInterface.DebugPanel = DebugPanel
+publicInterface.getRuntimeParameter = getRuntimeParameter
+publicInterface.bench = bench

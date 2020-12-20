@@ -97,5 +97,5 @@ class ResourceManager
         callback webglmc.Texture.fromImage(image, def)
 
 
-public = self.webglmc ?= {}
-public.ResourceManager = ResourceManager
+publicInterface = self.webglmc ?= {}
+publicInterface.ResourceManager = ResourceManager

@@ -47,6 +47,7 @@ class GLFlagContextObject extends ContextObject
   @withStack 'gl_flags'
 
   constructor: (funcs) ->
+    super()
     this.bind = funcs.bind
     this.unbind = funcs.unbind
 
@@ -71,8 +72,8 @@ disabledDepthTest = new GLFlagContextObject
     gl.enable gl.DEPTH_TEST
 
 
-public = self.webglmc ?= {}
-public.ContextObject = ContextObject
-public.getContextObjectStacks = -> stacks
-public.withContext = withContext
-public.disabledDepthTest = disabledDepthTest
+publicInterface = self.webglmc ?= {}
+publicInterface.ContextObject = ContextObject
+publicInterface.getContextObjectStacks = -> stacks
+publicInterface.withContext = withContext
+publicInterface.disabledDepthTest = disabledDepthTest

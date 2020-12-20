@@ -68,5 +68,5 @@ class Camera
     engine.view.set mv
 
 
-public = self.webglmc ?= {}
-public.Camera = Camera
+publicInterface = self.webglmc ?= {}
+publicInterface.Camera = Camera

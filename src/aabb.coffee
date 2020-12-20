@@ -7,5 +7,5 @@ class AABB
     vec3.subtract @vec2, @vec1, vec3.create()
 
 
-public = self.webglmc ?= {}
-public.AABB = AABB
+publicInterface = self.webglmc ?= {}
+publicInterface.AABB = AABB

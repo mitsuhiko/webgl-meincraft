@@ -21,5 +21,5 @@ makeDefaultResourceManager = ->
   resmgr
 
 
-public = self.webglmc ?= {}
-public.makeDefaultResourceManager = makeDefaultResourceManager
+publicInterface = self.webglmc ?= {}
+publicInterface.makeDefaultResourceManager = makeDefaultResourceManager

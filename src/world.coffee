@@ -381,6 +381,6 @@ class World
         vbo.draw()
 
 
-public = self.webglmc ?= {}
-public.World = World
-public.BLOCK_TYPES = BLOCK_TYPES
+publicInterface = self.webglmc ?= {}
+publicInterface.World = World
+publicInterface.BLOCK_TYPES = BLOCK_TYPES

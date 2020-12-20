@@ -214,5 +214,5 @@ class PerlinGenerator
     total
 
 
-public = self.webglmc ?= {}
-public.PerlinGenerator = PerlinGenerator
+publicInterface = self.webglmc ?= {}
+publicInterface.PerlinGenerator = PerlinGenerator

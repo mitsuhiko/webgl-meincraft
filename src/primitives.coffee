@@ -151,5 +151,5 @@ class CubeMaker
     vbo
 
 
-public = self.webglmc ?= {}
-public.CubeMaker = CubeMaker
+publicInterface = self.webglmc ?= {}
+publicInterface.CubeMaker = CubeMaker

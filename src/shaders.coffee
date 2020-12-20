@@ -88,6 +88,7 @@ class Shader extends webglmc.ContextObject
   constructor: (source, filename = null) ->
     {gl} = webglmc.engine
 
+    super()
     @prog = gl.createProgram()
     @vertexShader = shaderFromSource 'VERTEX_SHADER', source, filename
     @fragmentShader = shaderFromSource 'FRAGMENT_SHADER', source, filename
@@ -160,6 +161,6 @@ class Shader extends webglmc.ContextObject
     gl.destroyShader @fragmentShader
 
 
-public = self.webglmc ?= {}
-public.Shader = Shader
-public.loadShader = loadShader
+publicInterface = self.webglmc ?= {}
+publicInterface.Shader = Shader
+publicInterface.loadShader = loadShader

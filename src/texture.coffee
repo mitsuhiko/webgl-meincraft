@@ -41,6 +41,7 @@ class Texture extends webglmc.ContextObject
   @withStack 'texture'
 
   constructor: (width, height, storedWidth, storedHeight, offsetX, offsetY) ->
+    super()
     @id = -1
     @unit = 0
     @width = width
@@ -112,5 +113,5 @@ class TextureSlice extends Texture
     @unit = texture.unit
 
 
-public = self.webglmc ?= {}
-public.Texture = Texture
+publicInterface = self.webglmc ?= {}
+publicInterface.Texture = Texture
