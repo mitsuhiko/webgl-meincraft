@@ -173,6 +173,6 @@ class MatrixStack
     webglmc.engine.markMVPDirty()
 
 
-public = self.webglmc ?= {}
-public.Engine = Engine
-public.clear = clear
+publicInterface = self.webglmc ?= {}
+publicInterface.Engine = Engine
+publicInterface.clear = clear

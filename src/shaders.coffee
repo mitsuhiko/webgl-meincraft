@@ -160,6 +160,6 @@ class Shader extends webglmc.ContextObject
     gl.destroyShader @fragmentShader
 
 
-public = self.webglmc ?= {}
-public.Shader = Shader
-public.loadShader = loadShader
+publicInterface = self.webglmc ?= {}
+publicInterface.Shader = Shader
+publicInterface.loadShader = loadShader

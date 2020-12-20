@@ -115,8 +115,8 @@ $(document).ready ->
   initEngineAndGame '#viewport', debug
 
 
-public = self.webglmc ?= {}
-public.game = null
-public.debugPanel = null
-public.resmgr = null
-public.engine = null
+publicInterface = self.webglmc ?= {}
+publicInterface.game = null
+publicInterface.debugPanel = null
+publicInterface.resmgr = null
+publicInterface.engine = null

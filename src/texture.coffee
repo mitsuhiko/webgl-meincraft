@@ -112,5 +112,5 @@ class TextureSlice extends Texture
     @unit = texture.unit
 
 
-public = self.webglmc ?= {}
-public.Texture = Texture
+publicInterface = self.webglmc ?= {}
+publicInterface.Texture = Texture

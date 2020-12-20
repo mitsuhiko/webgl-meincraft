@@ -84,5 +84,5 @@ class Frustum
     if pointsVisible == 48 then 1 else 0
 
 
-public = self.webglmc ?= {}
-public.Frustum = Frustum
+publicInterface = self.webglmc ?= {}
+publicInterface.Frustum = Frustum

@@ -71,6 +71,6 @@ class Ray
     if didHit then new RaycastHit(lowt, sideHit) else null
 
 
-public = self.webglmc ?= {}
-public.Ray = Ray
-public.RaycastHit = RaycastHit
+publicInterface = self.webglmc ?= {}
+publicInterface.Ray = Ray
+publicInterface.RaycastHit = RaycastHit

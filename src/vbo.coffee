@@ -167,5 +167,5 @@ class VertexBufferObject extends webglmc.ContextObject
     this.pop()
 
 
-public = self.webglmc ?= {}
-public.VertexBufferObject = VertexBufferObject
+publicInterface = self.webglmc ?= {}
+publicInterface.VertexBufferObject = VertexBufferObject

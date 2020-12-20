@@ -42,9 +42,9 @@ nextPowerOfTwo = (value) ->
   value + 1
 
 
-public = self.webglmc ?= {}
-public.dirname = dirname
-public.joinFilename = joinFilename
-public.autoShortenFilename = autoShortenFilename
-public.floatColorFromHex = floatColorFromHex
-public.nextPowerOfTwo = nextPowerOfTwo
+publicInterface = self.webglmc ?= {}
+publicInterface.dirname = dirname
+publicInterface.joinFilename = joinFilename
+publicInterface.autoShortenFilename = autoShortenFilename
+publicInterface.floatColorFromHex = floatColorFromHex
+publicInterface.nextPowerOfTwo = nextPowerOfTwo

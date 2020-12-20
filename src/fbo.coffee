@@ -67,6 +67,6 @@ class FrameBufferObject extends webglmc.ContextObject
     gl.bindFramebuffer gl.FRAMEBUFFER, null
 
 
-public = self.webglmc ?= {}
-public.RenderBufferObject = RenderBufferObject
-public.FrameBufferObject = FrameBufferObject
+publicInterface = self.webglmc ?= {}
+publicInterface.RenderBufferObject = RenderBufferObject
+publicInterface.FrameBufferObject = FrameBufferObject

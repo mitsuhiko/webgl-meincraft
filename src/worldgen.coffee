@@ -185,6 +185,6 @@ class WorldGenerator
     @world.setRequestedChunk x, y, z, chunk
 
 
-public = self.webglmc ?= {}
-public.WorldGenerator = WorldGenerator
-public.WorldGeneratorProcess = WorldGeneratorProcess
+publicInterface = self.webglmc ?= {}
+publicInterface.WorldGenerator = WorldGenerator
+publicInterface.WorldGeneratorProcess = WorldGeneratorProcess
